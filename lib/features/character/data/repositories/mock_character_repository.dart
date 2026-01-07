@@ -1,3 +1,4 @@
+import 'package:dnd_app/core/constants/attributes.dart';
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failures.dart';
@@ -27,7 +28,7 @@ class MockCharacterRepository implements CharacterRepository {
         intelligence: 12,
         wisdom: 10,
         charisma: 18,
-        proficientSaves: <String>['DESTREZA', 'CARISMA'],
+        proficientSaves: <Attribute>[Attribute.dexterity, Attribute.charisma],
         equipment: <String>['Scimitar', 'Lute', 'Leather Armor', 'Dagger'],
       ),
     );

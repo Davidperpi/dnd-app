@@ -93,33 +93,12 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
 
   Widget _buildStatBox(Attribute attr, Character char, ThemeData theme) {
     // ... (Lógica de obtención de score igual que antes) ...
-    int score = 0;
-    switch (attr) {
-      case Attribute.strength:
-        score = char.strength;
-        break;
-      case Attribute.dexterity:
-        score = char.dexterity;
-        break;
-      case Attribute.constitution:
-        score = char.constitution;
-        break;
-      case Attribute.intelligence:
-        score = char.intelligence;
-        break;
-      case Attribute.wisdom:
-        score = char.wisdom;
-        break;
-      case Attribute.charisma:
-        score = char.charisma;
-        break;
-    }
-
+    final int score = char.getScore(attr);
     int valueToShow;
     bool isProficient = false;
     if (_showSavingThrows) {
-      valueToShow = char.getSavingThrow(attr.id, score);
-      isProficient = char.proficientSaves.contains(attr.id);
+      valueToShow = char.getSavingThrow(attr);
+      isProficient = char.proficientSaves.contains(attr);
     } else {
       valueToShow = char.getModifier(score);
     }

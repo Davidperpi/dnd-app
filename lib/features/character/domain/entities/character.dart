@@ -1,3 +1,4 @@
+import 'package:dnd_app/core/constants/attributes.dart';
 import 'package:equatable/equatable.dart';
 
 /// Entidad de Dominio: Character
@@ -23,7 +24,7 @@ class Character extends Equatable {
   final int wisdom;
   final int charisma;
 
-  final List<String> proficientSaves;
+  final List<Attribute> proficientSaves;
 
   // Inventario (Strings por ahora para el MVP)
   final List<String> equipment;
@@ -70,8 +71,22 @@ class Character extends Equatable {
   // Nivel 1-4: +2, 5-8: +3, etc.
   int get proficiencyBonus => 2 + ((level - 1) ~/ 4);
 
+  Map<Attribute, int> get abilityScores => <Attribute, int>{
+    Attribute.strength: strength,
+    Attribute.dexterity: dexterity,
+    Attribute.constitution: constitution,
+    Attribute.intelligence: intelligence,
+    Attribute.wisdom: wisdom,
+    Attribute.charisma: charisma,
+  };
+
+  // Ahora tu método de "negocio" es una sola línea, sin switch.
+  // Usamos el operador [] porque estamos seguros de que el mapa tiene todas las claves.
+  int getScore(Attribute attribute) => abilityScores[attribute]!;
+
   // Cálculo de la Salvación Total
-  int getSavingThrow(String attribute, int score) {
+  int getSavingThrow(Attribute attribute) {
+    final int score = getScore(attribute);
     final int baseMod = getModifier(score);
     // Si la lista de competencias incluye este atributo, suma el bono
     final bool isProficient = proficientSaves.contains(attribute);
@@ -98,7 +113,7 @@ class Character extends Equatable {
     int? wisdom,
     int? charisma,
     List<String>? equipment,
-    List<String>? proficientSaves,
+    List<Attribute>? proficientSaves,
   }) {
     return Character(
       id: id ?? this.id,
