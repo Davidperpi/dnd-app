@@ -1,0 +1,12 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    - always_declare_return_types
+    - always_specify_types
+    - avoid_print
+    - annotate_overrides
+    - prefer_const_constructors
+    - prefer_final_fields
+    - prefer_final_locals
+    - unawaited_futures
