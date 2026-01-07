@@ -1,4 +1,5 @@
 import 'package:dnd_app/core/constants/attributes.dart';
+import 'package:dnd_app/core/constants/skills.dart';
 import 'package:equatable/equatable.dart';
 
 /// Entidad de Dominio: Character
@@ -26,6 +27,15 @@ class Character extends Equatable {
 
   final List<Attribute> proficientSaves;
 
+  final String description; // Lore
+  final String imageUrl; // URL de la foto
+  final List<Skill> proficientSkills; // Lista de skills entrenadas
+  final List<Skill> expertSkills;
+
+  final int speed;
+
+  final bool hasJackOfAllTrades;
+
   // Inventario (Strings por ahora para el MVP)
   final List<String> equipment;
 
@@ -46,6 +56,12 @@ class Character extends Equatable {
     required this.wisdom,
     required this.charisma,
     required this.proficientSaves,
+    required this.description,
+    required this.imageUrl,
+    required this.proficientSkills,
+    required this.expertSkills,
+    required this.speed,
+    this.hasJackOfAllTrades = false,
     this.equipment = const <String>[],
   }) : assert(
          currentHp >= 0,
@@ -93,9 +109,56 @@ class Character extends Equatable {
     return baseMod + (isProficient ? proficiencyBonus : 0);
   }
 
+  Attribute getAttributeForSkill(Skill skill) {
+    return switch (skill) {
+      Skill.athletics => Attribute.strength,
+      Skill.acrobatics ||
+      Skill.sleightOfHand ||
+      Skill.stealth => Attribute.dexterity,
+      Skill.arcana ||
+      Skill.history ||
+      Skill.investigation ||
+      Skill.nature ||
+      Skill.religion => Attribute.intelligence,
+      Skill.animalHandling ||
+      Skill.insight ||
+      Skill.medicine ||
+      Skill.perception ||
+      Skill.survival => Attribute.wisdom,
+      Skill.deception ||
+      Skill.intimidation ||
+      Skill.performance ||
+      Skill.persuasion => Attribute.charisma,
+    };
+  }
+
+  int getSkillBonus(Skill skill) {
+    final Attribute associatedAttr = getAttributeForSkill(skill);
+    final int baseMod = getModifier(getScore(associatedAttr));
+
+    // 1. Caso EXPERTISE (x2)
+    if (expertSkills.contains(skill)) {
+      return baseMod + (proficiencyBonus * 2);
+    }
+
+    // 2. Caso PROFICIENCY (x1)
+    if (proficientSkills.contains(skill)) {
+      return baseMod + proficiencyBonus;
+    }
+
+    // 3. Caso JACK OF ALL TRADES (x0.5)
+    // Solo aplica si NO eres competente y tienes el flag activo
+    if (hasJackOfAllTrades) {
+      return baseMod + (proficiencyBonus ~/ 2); // División entera
+    }
+
+    // 4. Caso BASE (Solo atributo)
+    return baseMod;
+  }
+
+  int get passivePerception => 10 + getSkillBonus(Skill.perception);
+
   // --- Helper: CopyWith ---
-  // Vital para State Management inmutable (Redux/BLoC).
-  // Permite: state.copyWith(currentHp: state.currentHp - 5)
   Character copyWith({
     String? id,
     String? name,
@@ -112,8 +175,13 @@ class Character extends Equatable {
     int? intelligence,
     int? wisdom,
     int? charisma,
+    int? speed,
     List<String>? equipment,
     List<Attribute>? proficientSaves,
+    String? description,
+    String? imageUrl,
+    List<Skill>? proficientSkills,
+    List<Skill>? expertSkills,
   }) {
     return Character(
       id: id ?? this.id,
@@ -133,12 +201,17 @@ class Character extends Equatable {
       charisma: charisma ?? this.charisma,
       proficientSaves: proficientSaves ?? this.proficientSaves,
       equipment: equipment ?? this.equipment,
+      description: description ?? this.description,
+      imageUrl: imageUrl ?? this.imageUrl,
+      proficientSkills: proficientSkills ?? this.proficientSkills,
+      expertSkills: expertSkills ?? this.expertSkills,
+      speed: speed ?? this.speed,
     );
   }
 
   @override
-  // Equatable: define qué campos determinan si dos personajes son "el mismo".
-  // Si cambia el HP, el objeto es diferente y BLoC disparará un render.
+  // Equatable: Importante añadir los nuevos campos aquí.
+  // Si cambia la descripción o gana una skill nueva, BLoC debe saberlo.
   List<Object?> get props => <Object?>[
     id,
     name,
@@ -157,5 +230,8 @@ class Character extends Equatable {
     charisma,
     proficientSaves,
     equipment,
+    description,
+    imageUrl,
+    proficientSkills,
   ];
 }
