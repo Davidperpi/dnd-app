@@ -1,4 +1,5 @@
 import 'package:dnd_app/core/constants/attributes.dart';
+import 'package:dnd_app/core/constants/damage_type.dart';
 import 'package:dnd_app/core/constants/skills.dart';
 import 'package:fpdart/fpdart.dart';
 
@@ -49,6 +50,9 @@ class MockCharacterRepository implements CharacterRepository {
         proficientSkills: <Skill>[Skill.survival],
         hasJackOfAllTrades: true,
         speed: 30,
+        resistances: <DamageType>[DamageType.fire, DamageType.poison],
+        immunities: <DamageType>[DamageType.acid],
+        vulnerabilities: <DamageType>[DamageType.force],
       ),
     );
   }

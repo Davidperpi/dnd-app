@@ -1,4 +1,5 @@
 import 'package:dnd_app/core/constants/attributes.dart';
+import 'package:dnd_app/core/constants/damage_type.dart';
 import 'package:dnd_app/core/constants/skills.dart';
 import 'package:equatable/equatable.dart';
 
@@ -39,6 +40,10 @@ class Character extends Equatable {
   // Inventario (Strings por ahora para el MVP)
   final List<String> equipment;
 
+  final List<DamageType> resistances;
+  final List<DamageType> immunities;
+  final List<DamageType> vulnerabilities;
+
   const Character({
     required this.id,
     required this.name,
@@ -63,6 +68,9 @@ class Character extends Equatable {
     required this.speed,
     this.hasJackOfAllTrades = false,
     this.equipment = const <String>[],
+    this.resistances = const <DamageType>[],
+    this.immunities = const <DamageType>[],
+    this.vulnerabilities = const <DamageType>[],
   }) : assert(
          currentHp >= 0,
          'HP cannot be negative',
@@ -182,6 +190,10 @@ class Character extends Equatable {
     String? imageUrl,
     List<Skill>? proficientSkills,
     List<Skill>? expertSkills,
+    bool? hasJackOfAllTrades,
+    List<DamageType>? resistances,
+    List<DamageType>? immunities,
+    List<DamageType>? vulnerabilities,
   }) {
     return Character(
       id: id ?? this.id,
@@ -206,6 +218,10 @@ class Character extends Equatable {
       proficientSkills: proficientSkills ?? this.proficientSkills,
       expertSkills: expertSkills ?? this.expertSkills,
       speed: speed ?? this.speed,
+      hasJackOfAllTrades: hasJackOfAllTrades ?? this.hasJackOfAllTrades,
+      resistances: resistances ?? this.resistances,
+      immunities: immunities ?? this.immunities,
+      vulnerabilities: vulnerabilities ?? this.vulnerabilities,
     );
   }
 
@@ -233,5 +249,11 @@ class Character extends Equatable {
     description,
     imageUrl,
     proficientSkills,
+    expertSkills,
+    speed,
+    hasJackOfAllTrades,
+    resistances,
+    immunities,
+    vulnerabilities,
   ];
 }

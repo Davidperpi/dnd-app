@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/attributes.dart';
+import '../../../../core/constants/damage_type.dart';
 import '../../../../core/constants/skills.dart';
 import '../../domain/entities/character.dart';
 import 'character_bio.dart';
@@ -22,6 +23,12 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final Character char = widget.character;
+
+    // Chequeo rápido para saber si hay defensas que mostrar
+    final bool hasDefenses =
+        char.resistances.isNotEmpty ||
+        char.immunities.isNotEmpty ||
+        char.vulnerabilities.isNotEmpty;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -55,14 +62,24 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
 
           const SizedBox(height: 24),
 
-          // 2. PERCEPCIÓN PASIVA (Línea Compacta)
+          // 2. PERCEPCIÓN PASIVA
           _buildPassivePerceptionRow(char, theme),
 
-          const SizedBox(height: 24),
-          Divider(color: theme.dividerColor), // Usa el divider del tema
-          const SizedBox(height: 24),
+          const SizedBox(height: 32),
 
-          // 3. COMPETENCIAS
+          // 3. DEFENSAS (Ahora con Cabecera y Leyenda)
+          _buildDefensesSection(char, theme, context),
+
+          // Lógica de separación:
+          // Si hay defensas, ponemos separadores más amplios.
+          // Si no, el separador estándar antes de skills.
+          if (hasDefenses) ...[
+            const SizedBox(height: 32),
+          ] else ...[
+            const SizedBox(height: 24),
+          ],
+
+          // 4. COMPETENCIAS
           _buildSectionHeader(
             theme: theme,
             title: 'COMPETENCIAS',
@@ -79,7 +96,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
           Divider(color: theme.dividerColor),
           const SizedBox(height: 32),
 
-          // 4. BIO
+          // 5. BIO
           CharacterBio(character: char),
 
           const SizedBox(height: 40),
@@ -92,16 +109,185 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
   // WIDGETS AUXILIARES
   // ===========================================================================
 
-  /// Línea compacta para la Percepción Pasiva
+  /// Sección de Defensas con Cabecera Unificada y Botón de Ayuda
+  Widget _buildDefensesSection(
+    Character char,
+    ThemeData theme,
+    BuildContext context,
+  ) {
+    if (char.resistances.isEmpty &&
+        char.immunities.isEmpty &&
+        char.vulnerabilities.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 1. CABECERA UNIFICADA
+        _buildSectionHeader(
+          theme: theme,
+          title: 'DEFENSAS',
+          actionLabel: 'LEYENDA', // Botón para explicar colores
+          icon: Icons.help_outline,
+          onActionTap: () => _showDefenseLegendDialog(context, theme),
+        ),
+
+        const SizedBox(height: 16),
+
+        // 2. CHIPS DE DEFENSA
+        SizedBox(
+          width: double.infinity,
+          child: Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            alignment: WrapAlignment.center,
+            children: [
+              // Resistencias (Dorado/Ámbar)
+              ...char.resistances.map(
+                (DamageType res) => _buildDefenseChip(
+                  damageType: res,
+                  color: const Color(0xFFFFC107), // Ámbar
+                  theme: theme,
+                ),
+              ),
+
+              // Inmunidades (Verde)
+              ...char.immunities.map(
+                (DamageType imm) => _buildDefenseChip(
+                  damageType: imm,
+                  color: const Color(0xFF4CAF50), // Verde
+                  theme: theme,
+                ),
+              ),
+
+              // Vulnerabilidades (Rojo)
+              ...char.vulnerabilities.map(
+                (DamageType vul) => _buildDefenseChip(
+                  damageType: vul,
+                  color: const Color(0xFFEF5350), // Rojo suave
+                  theme: theme,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Popup de Leyenda para explicar los colores
+  void _showDefenseLegendDialog(BuildContext context, ThemeData theme) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: theme.colorScheme.surfaceContainer,
+        title: Text("Guía de Defensas", style: theme.textTheme.titleLarge),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildLegendRow(
+              Icons.shield_outlined,
+              "Resistencia",
+              "Recibes la MITAD de daño.",
+              const Color(0xFFFFC107),
+              theme,
+            ),
+            const SizedBox(height: 16),
+            _buildLegendRow(
+              Icons.health_and_safety,
+              "Inmunidad",
+              "No recibes NINGÚN daño.",
+              const Color(0xFF4CAF50),
+              theme,
+            ),
+            const SizedBox(height: 16),
+            _buildLegendRow(
+              Icons.broken_image_outlined,
+              "Vulnerabilidad",
+              "Recibes el DOBLE de daño.",
+              const Color(0xFFEF5350),
+              theme,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: Text(
+              "OK",
+              style: TextStyle(color: theme.colorScheme.secondary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegendRow(
+    IconData icon,
+    String title,
+    String subtitle,
+    Color color,
+    ThemeData theme,
+  ) {
+    return Row(
+      children: [
+        Icon(icon, color: color, size: 24),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(color: color, fontWeight: FontWeight.bold),
+              ),
+              Text(subtitle, style: theme.textTheme.bodySmall),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDefenseChip({
+    required DamageType damageType,
+    required Color color,
+    required ThemeData theme,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainer,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(damageType.icon, size: 14, color: color),
+          const SizedBox(width: 6),
+          Text(
+            damageType.nameES,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPassivePerceptionRow(Character char, ThemeData theme) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        // CORREGIDO: Usamos el color del tema para tarjetas
         color: theme.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(8),
-        // Borde sutil usando el dividerColor del tema o blanco muy transparente
         border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
       ),
       child: Row(
@@ -157,10 +343,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
           ),
         ),
         const SizedBox(width: 8),
-        Text(
-          title,
-          style: theme.textTheme.titleLarge, // Ya tiene el estilo en AppTheme
-        ),
+        Text(title, style: theme.textTheme.titleLarge),
         const Spacer(),
         InkWell(
           onTap: onActionTap,
@@ -205,7 +388,6 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          // CORREGIDO: Color del tema
           color: theme.colorScheme.surfaceContainer,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
@@ -222,7 +404,6 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                // Color de texto secundario del tema
                 color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
                 letterSpacing: 1.5,
               ),
@@ -233,7 +414,6 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w700,
-                // Color principal de texto del tema
                 color: theme.colorScheme.onSurface,
               ),
             ),
@@ -299,7 +479,6 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        // CORREGIDO: Color del tema
         color: theme.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
@@ -334,7 +513,6 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
               height: 8,
               decoration: BoxDecoration(
                 border: Border.all(
-                  // Borde gris sutil
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
                   width: 1.5,
                 ),
