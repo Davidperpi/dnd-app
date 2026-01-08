@@ -1,10 +1,15 @@
+// Core Imports
 import 'package:dnd_app/core/constants/attributes.dart';
 import 'package:dnd_app/core/constants/damage_type.dart';
 import 'package:dnd_app/core/constants/skills.dart';
 import 'package:equatable/equatable.dart';
 
-/// Entidad de Dominio: Character
-/// Representa al personaje puro, agnóstico de si viene de JSON, Firebase o SQL.
+import '../../../inventory/domain/entities/armor.dart';
+// Inventory Feature Imports (Asegúrate de que la ruta relativa sea correcta)
+// Dado que character y inventory son hermanos en 'features/', subimos 3 niveles:
+import '../../../inventory/domain/entities/item.dart';
+import '../../../inventory/domain/entities/weapon.dart' hide DamageType;
+
 class Character extends Equatable {
   final String id;
   final String name;
@@ -12,13 +17,12 @@ class Character extends Equatable {
   final String characterClass;
   final int level;
 
-  // Stats (Value Objects simplificados)
+  // Stats
   final int maxHp;
   final int currentHp;
-  final int armorClass; // AC
-  final int initiative; // Basado en Destreza
+  final int initiative;
 
-  // Ability Scores (Stats base)
+  // Ability Scores
   final int strength;
   final int dexterity;
   final int constitution;
@@ -27,22 +31,69 @@ class Character extends Equatable {
   final int charisma;
 
   final List<Attribute> proficientSaves;
-
-  final String description; // Lore
-  final String imageUrl; // URL de la foto
-  final List<Skill> proficientSkills; // Lista de skills entrenadas
+  final String description;
+  final String imageUrl;
+  final List<Skill> proficientSkills;
   final List<Skill> expertSkills;
-
   final int speed;
-
   final bool hasJackOfAllTrades;
 
-  // Inventario (Strings por ahora para el MVP)
-  final List<String> equipment;
+  // --- NUEVO SISTEMA DE INVENTARIO ---
+  // Ya no usamos List<String>. Ahora es la Single Source of Truth.
+  final List<Item> inventory;
 
   final List<DamageType> resistances;
   final List<DamageType> immunities;
   final List<DamageType> vulnerabilities;
+
+  int get armorClass {
+    int baseAC = 10;
+    final int dexMod = getModifier(dexterity);
+
+    // 1. Buscamos armadura equipada (Slot.armor)
+    final Armor? armor =
+        equippedArmor; // Usamos el getter que ya tenías o creamos uno
+
+    if (armor != null) {
+      baseAC = armor
+          .armorClassBonus; // En D&D 5e, la armadura establece la base (ej. Leather = 11)
+
+      // Aplicamos reglas de Dex según tipo
+      switch (armor.armorType) {
+        case ArmorType.light:
+          baseAC += dexMod; // Full Dex
+          break;
+        case ArmorType.medium:
+          // Máximo +2 de Dex
+          baseAC += (dexMod > 2 ? 2 : dexMod);
+          break;
+        case ArmorType.heavy:
+          // No suma Dex
+          break;
+        case ArmorType.shield:
+          // El escudo se suma aparte, no define la base
+          break;
+      }
+    } else {
+      // Sin armadura: 10 + Dex
+      baseAC += dexMod;
+      // (Aquí iría Unarmored Defense de Monje/Bárbaro en el futuro)
+    }
+
+    // 2. Buscamos Escudos equipados (Cualquier item Armor que sea tipo Shield)
+    // Nota: equippedItems es un getter que retorna List<Item>
+    final bool hasShield = inventory.any(
+      (Item i) => i is Armor && i.isEquipped && i.armorType == ArmorType.shield,
+    );
+
+    if (hasShield) {
+      baseAC += 2;
+    }
+
+    // (Aquí sumaríamos anillos de protección, etc.)
+
+    return baseAC;
+  }
 
   const Character({
     required this.id,
@@ -52,7 +103,6 @@ class Character extends Equatable {
     required this.level,
     required this.maxHp,
     required this.currentHp,
-    required this.armorClass,
     required this.initiative,
     required this.strength,
     required this.dexterity,
@@ -67,32 +117,20 @@ class Character extends Equatable {
     required this.expertSkills,
     required this.speed,
     this.hasJackOfAllTrades = false,
-    this.equipment = const <String>[],
+    this.inventory = const <Item>[], // Default vacío
     this.resistances = const <DamageType>[],
     this.immunities = const <DamageType>[],
     this.vulnerabilities = const <DamageType>[],
-  }) : assert(
-         currentHp >= 0,
-         'HP cannot be negative',
-       ), // Validaciones de dominio
+  }) : assert(currentHp >= 0, 'HP cannot be negative'),
        assert(maxHp > 0, 'Max HP must be positive');
 
   // --- Domain Logic (Getters computados) ---
-  // La UI nunca debe calcular esto, solo mostrarlo.
 
   bool get isDead => currentHp == 0;
-
-  /// "Bloodied" es una regla de D&D 4e/5e (HP < 50%) útil para UI roja
   bool get isBloodied => currentHp <= (maxHp / 2) && currentHp > 0;
-
-  /// Retorna un valor entre 0.0 y 1.0 para usar en LinearProgressIndicator
   double get healthPercentage => (currentHp / maxHp).clamp(0.0, 1.0);
 
-  // Cálculo del modificador base: (16 - 10) / 2 = +3
   int getModifier(int score) => (score - 10) ~/ 2;
-
-  // Cálculo del Bono de Competencia según nivel (Regla D&D 5e)
-  // Nivel 1-4: +2, 5-8: +3, etc.
   int get proficiencyBonus => 2 + ((level - 1) ~/ 4);
 
   Map<Attribute, int> get abilityScores => <Attribute, int>{
@@ -104,18 +142,48 @@ class Character extends Equatable {
     Attribute.charisma: charisma,
   };
 
-  // Ahora tu método de "negocio" es una sola línea, sin switch.
-  // Usamos el operador [] porque estamos seguros de que el mapa tiene todas las claves.
   int getScore(Attribute attribute) => abilityScores[attribute]!;
 
-  // Cálculo de la Salvación Total
   int getSavingThrow(Attribute attribute) {
     final int score = getScore(attribute);
     final int baseMod = getModifier(score);
-    // Si la lista de competencias incluye este atributo, suma el bono
     final bool isProficient = proficientSaves.contains(attribute);
     return baseMod + (isProficient ? proficiencyBonus : 0);
   }
+
+  // --- NUEVA LÓGICA DE COMBATE E INVENTARIO ---
+
+  /// Filtra y devuelve solo los items que son Armas
+  List<Weapon> get weapons => inventory.whereType<Weapon>().toList();
+
+  /// Devuelve las armas actualmente equipadas (Listas para la Action Tab)
+  List<Weapon> get equippedWeapons =>
+      weapons.where((Weapon w) => w.isEquipped).toList();
+
+  /// Devuelve la armadura equipada (si la hay)
+  Armor? get equippedArmor {
+    final Iterable<Armor> armors = inventory.whereType<Armor>().where(
+      (Armor a) => a.isEquipped,
+    );
+    return armors.isNotEmpty ? armors.first : null;
+  }
+
+  /// Calcula el bono de ataque (+Hit) para un arma específica
+  int getAttackBonus(Weapon weapon) {
+    final int mod = getModifier(getScore(weapon.attribute));
+    // Si el personaje es competente con el arma, suma el bono de competencia
+    // (Asumimos que si está en la lista weapon.isProficient es true por defecto o viene del item)
+    return mod + (weapon.isProficient ? proficiencyBonus : 0);
+  }
+
+  /// Calcula el modificador de daño para un arma
+  int getDamageModifier(Weapon weapon) {
+    // Por defecto en 5e, sumas el modificador del atributo al daño
+    // (A menos que sea off-hand sin estilo de combate, pero eso es lógica avanzada para v2)
+    return getModifier(getScore(weapon.attribute));
+  }
+
+  // --- LÓGICA DE SKILLS (Sin cambios) ---
 
   Attribute getAttributeForSkill(Skill skill) {
     return switch (skill) {
@@ -144,29 +212,15 @@ class Character extends Equatable {
     final Attribute associatedAttr = getAttributeForSkill(skill);
     final int baseMod = getModifier(getScore(associatedAttr));
 
-    // 1. Caso EXPERTISE (x2)
-    if (expertSkills.contains(skill)) {
-      return baseMod + (proficiencyBonus * 2);
-    }
-
-    // 2. Caso PROFICIENCY (x1)
-    if (proficientSkills.contains(skill)) {
-      return baseMod + proficiencyBonus;
-    }
-
-    // 3. Caso JACK OF ALL TRADES (x0.5)
-    // Solo aplica si NO eres competente y tienes el flag activo
-    if (hasJackOfAllTrades) {
-      return baseMod + (proficiencyBonus ~/ 2); // División entera
-    }
-
-    // 4. Caso BASE (Solo atributo)
+    if (expertSkills.contains(skill)) return baseMod + (proficiencyBonus * 2);
+    if (proficientSkills.contains(skill)) return baseMod + proficiencyBonus;
+    if (hasJackOfAllTrades) return baseMod + (proficiencyBonus ~/ 2);
     return baseMod;
   }
 
   int get passivePerception => 10 + getSkillBonus(Skill.perception);
 
-  // --- Helper: CopyWith ---
+  // --- CopyWith Actualizado ---
   Character copyWith({
     String? id,
     String? name,
@@ -184,7 +238,7 @@ class Character extends Equatable {
     int? wisdom,
     int? charisma,
     int? speed,
-    List<String>? equipment,
+    List<Item>? inventory, // <--- CAMBIO AQUÍ
     List<Attribute>? proficientSaves,
     String? description,
     String? imageUrl,
@@ -203,7 +257,6 @@ class Character extends Equatable {
       level: level ?? this.level,
       maxHp: maxHp ?? this.maxHp,
       currentHp: currentHp ?? this.currentHp,
-      armorClass: armorClass ?? this.armorClass,
       initiative: initiative ?? this.initiative,
       strength: strength ?? this.strength,
       dexterity: dexterity ?? this.dexterity,
@@ -212,7 +265,7 @@ class Character extends Equatable {
       wisdom: wisdom ?? this.wisdom,
       charisma: charisma ?? this.charisma,
       proficientSaves: proficientSaves ?? this.proficientSaves,
-      equipment: equipment ?? this.equipment,
+      inventory: inventory ?? this.inventory,
       description: description ?? this.description,
       imageUrl: imageUrl ?? this.imageUrl,
       proficientSkills: proficientSkills ?? this.proficientSkills,
@@ -226,17 +279,8 @@ class Character extends Equatable {
   }
 
   @override
-  // Equatable: Importante añadir los nuevos campos aquí.
-  // Si cambia la descripción o gana una skill nueva, BLoC debe saberlo.
   List<Object?> get props => <Object?>[
-    id,
-    name,
-    race,
-    characterClass,
-    level,
-    maxHp,
-    currentHp,
-    armorClass,
+    id, name, race, characterClass, level, maxHp, currentHp, armorClass,
     initiative,
     strength,
     dexterity,
@@ -244,16 +288,8 @@ class Character extends Equatable {
     intelligence,
     wisdom,
     charisma,
-    proficientSaves,
-    equipment,
-    description,
-    imageUrl,
-    proficientSkills,
-    expertSkills,
-    speed,
-    hasJackOfAllTrades,
-    resistances,
-    immunities,
-    vulnerabilities,
+    proficientSaves, inventory, // <--- CAMBIO EN PROPS
+    description, imageUrl, proficientSkills, expertSkills, speed,
+    hasJackOfAllTrades, resistances, immunities, vulnerabilities,
   ];
 }

@@ -3,6 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart';
 
 import '../../../../core/error/failures.dart';
+import '../../../inventory/domain/entities/armor.dart';
+import '../../../inventory/domain/entities/equipment_slot.dart';
+// --- IMPORTS DE INVENTARIO (Necesarios para la lógica de items) ---
+import '../../../inventory/domain/entities/item.dart';
+import '../../../inventory/domain/entities/weapon.dart';
 import '../../domain/entities/character.dart';
 import '../../domain/usecases/get_character.dart';
 
@@ -16,9 +21,12 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     // 1. Registramos los eventos
     on<GetCharacterEvent>(_onGetCharacter);
     on<UpdateHealthEvent>(_onUpdateHealth);
+
+    // NUEVO: Registramos el evento de equipar
+    on<ToggleEquipItemEvent>(_onToggleEquipItem);
   }
 
-  // Lógica para cargar el personaje (API/Base de datos)
+  // --- LÓGICA DE CARGA ---
   Future<void> _onGetCharacter(
     GetCharacterEvent event,
     Emitter<CharacterState> emit,
@@ -33,21 +41,80 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     );
   }
 
-  // Lógica para modificar la vida (Local)
+  // --- LÓGICA DE VIDA ---
   void _onUpdateHealth(UpdateHealthEvent event, Emitter<CharacterState> emit) {
-    // Solo podemos curar/herir si ya tenemos un personaje cargado
     if (state is CharacterLoaded) {
       final Character currentChar = (state as CharacterLoaded).character;
-
-      // Calculamos la nueva vida
       int newHp = currentChar.currentHp + event.amount;
 
-      // CLAMP: Evitamos que la vida baje de 0 o suba del máximo
       if (newHp < 0) newHp = 0;
       if (newHp > currentChar.maxHp) newHp = currentChar.maxHp;
 
-      // Emitimos el nuevo estado clonando el personaje con la vida actualizada
       emit(CharacterLoaded(currentChar.copyWith(currentHp: newHp)));
     }
+  }
+
+  // --- NUEVA LÓGICA DE EQUIPAMIENTO ---
+  void _onToggleEquipItem(
+    ToggleEquipItemEvent event,
+    Emitter<CharacterState> emit,
+  ) {
+    final currentState = state;
+    // Solo actuamos si el personaje ya está cargado
+    if (currentState is! CharacterLoaded) return;
+
+    final currentCharacter = currentState.character;
+    final itemToToggle = event.item;
+
+    // Determinamos la intención: Si está equipado, queremos false. Si no, true.
+    final bool willEquip = !_isItemEquipped(itemToToggle);
+
+    // Creamos una NUEVA lista de inventario iterando sobre la actual
+    final List<Item> newInventory = currentCharacter.inventory.map((item) {
+      // 1. Caso: Es el item que el usuario tocó
+      if (item.id == itemToToggle.id) {
+        return _setItemEquippedStatus(item, willEquip);
+      }
+
+      // 2. Caso: Conflicto de Slot (Solo si estamos intentando EQUIPAR algo nuevo)
+      // Si voy a equipar una espada en Mano Principal, y ya tengo una ahí, la desequipo.
+      if (willEquip) {
+        if (_isItemEquipped(item) &&
+            _getItemSlot(item) == _getItemSlot(itemToToggle)) {
+          // Desequipamos el item antiguo que ocupaba el lugar
+          return _setItemEquippedStatus(item, false);
+        }
+      }
+
+      // 3. Caso: Item no relacionado
+      return item;
+    }).toList();
+
+    // Emitimos el nuevo estado con el inventario actualizado
+    emit(CharacterLoaded(currentCharacter.copyWith(inventory: newInventory)));
+  }
+
+  // --- HELPERS PRIVADOS (Para manejar el polimorfismo de Item) ---
+
+  bool _isItemEquipped(Item item) {
+    if (item is Weapon) return item.isEquipped;
+    if (item is Armor) return item.isEquipped;
+    return false;
+  }
+
+  EquipmentSlot _getItemSlot(Item item) {
+    if (item is Weapon) return item.slot;
+    if (item is Armor) return item.slot;
+    return EquipmentSlot.other;
+  }
+
+  Item _setItemEquippedStatus(Item item, bool status) {
+    if (item is Weapon) {
+      return item.copyWith(isEquipped: status);
+    }
+    if (item is Armor) {
+      return item.copyWith(isEquipped: status);
+    }
+    return item;
   }
 }
