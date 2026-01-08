@@ -73,11 +73,9 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
           // Lógica de separación:
           // Si hay defensas, ponemos separadores más amplios.
           // Si no, el separador estándar antes de skills.
-          if (hasDefenses) ...[
+          if (hasDefenses) ...<Widget>[
             const SizedBox(height: 32),
-          ] else ...[
-            const SizedBox(height: 24),
-          ],
+          ] else ...<Widget>[const SizedBox(height: 24)],
 
           // 4. COMPETENCIAS
           _buildSectionHeader(
@@ -123,7 +121,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
+      children: <Widget>[
         // 1. CABECERA UNIFICADA
         _buildSectionHeader(
           theme: theme,
@@ -142,7 +140,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
             spacing: 12,
             runSpacing: 12,
             alignment: WrapAlignment.center,
-            children: [
+            children: <Widget>[
               // Resistencias (Dorado/Ámbar)
               ...char.resistances.map(
                 (DamageType res) => _buildDefenseChip(
@@ -180,12 +178,12 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
   void _showDefenseLegendDialog(BuildContext context, ThemeData theme) {
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (BuildContext ctx) => AlertDialog(
         backgroundColor: theme.colorScheme.surfaceContainer,
         title: Text("Guía de Defensas", style: theme.textTheme.titleLarge),
         content: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
+          children: <Widget>[
             _buildLegendRow(
               Icons.shield_outlined,
               "Resistencia",
@@ -211,7 +209,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
             ),
           ],
         ),
-        actions: [
+        actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text(
@@ -232,13 +230,13 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
     ThemeData theme,
   ) {
     return Row(
-      children: [
+      children: <Widget>[
         Icon(icon, color: color, size: 24),
         const SizedBox(width: 16),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+            children: <Widget>[
               Text(
                 title,
                 style: TextStyle(color: color, fontWeight: FontWeight.bold),
@@ -265,7 +263,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: [
+        children: <Widget>[
           Icon(damageType.icon, size: 14, color: color),
           const SizedBox(width: 6),
           Text(

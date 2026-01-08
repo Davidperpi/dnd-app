@@ -61,7 +61,7 @@ class CharacterSummaryHeader extends StatelessWidget {
                       Text(
                         character.armorClass.toString(),
                         style: const TextStyle(
-                          color: Colors.black, // Contraste sobre dorado
+                          color: Colors.black,
                           fontWeight: FontWeight.w900,
                           fontSize: 18,
                           height: 1.0,

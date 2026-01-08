@@ -1,3 +1,4 @@
+import 'package:dnd_app/features/character/presentation/widgets/character_inventory_tab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -97,9 +98,7 @@ class CharacterView extends StatelessWidget {
                           children: <Widget>[
                             CharacterStatsTab(character: char),
                             const Center(child: Text('Próximamente: Ataques')),
-                            const Center(
-                              child: Text('Próximamente: Inventario'),
-                            ),
+                            CharacterInventoryTab(character: char),
                           ],
                         ),
                       ),
