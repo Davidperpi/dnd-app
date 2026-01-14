@@ -1,4 +1,5 @@
 import 'package:dnd_app/core/constants/attributes.dart';
+import 'package:dnd_app/core/constants/damage_type.dart';
 import 'package:dnd_app/features/inventory/domain/entities/armor.dart';
 import 'package:dnd_app/features/inventory/domain/entities/item.dart';
 import 'package:dnd_app/features/inventory/domain/entities/weapon.dart';
@@ -196,6 +197,7 @@ String _translateDamageTypeFull(DamageType type) {
     DamageType.piercing => 'Perforante',
     DamageType.bludgeoning => 'Contundente',
     DamageType.psychic => 'Psíquico',
+    _ => 'Mágico',
   };
 }
 

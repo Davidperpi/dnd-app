@@ -1,5 +1,6 @@
 // Import de Core (Solo Attributes, quitamos DamageType para evitar conflictos)
 import 'package:dnd_app/core/constants/attributes.dart';
+import 'package:dnd_app/core/constants/damage_type.dart';
 // Imports de Dominio
 import 'package:dnd_app/features/inventory/domain/entities/armor.dart';
 import 'package:dnd_app/features/inventory/domain/entities/equipment_slot.dart';
@@ -303,6 +304,7 @@ class InventoryItemCard extends StatelessWidget {
       DamageType.piercing => 'PER',
       DamageType.bludgeoning => 'CON',
       DamageType.psychic => 'PSI',
+      _ => 'Mágico',
     };
   }
 

@@ -1,8 +1,10 @@
+import 'package:dnd_app/core/constants/damage_type.dart';
+
 import '../../../../core/constants/attributes.dart';
 import '../../domain/entities/armor.dart';
 import '../../domain/entities/equipment_slot.dart';
 import '../../domain/entities/gear.dart';
-import '../../domain/entities/weapon.dart'; // Recuerda el 'hide' si aún tienes conflicto
+import '../../domain/entities/weapon.dart';
 
 // --- ARMAS ---
 const Weapon weaponSable = Weapon(

@@ -22,8 +22,11 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     on<GetCharacterEvent>(_onGetCharacter);
     on<UpdateHealthEvent>(_onUpdateHealth);
 
-    // NUEVO: Registramos el evento de equipar
+    // Registramos el evento de equipar
     on<ToggleEquipItemEvent>(_onToggleEquipItem);
+
+    // NUEVO: Registramos el evento de favoritos
+    on<ToggleFavoriteActionEvent>(_onToggleFavoriteAction);
   }
 
   // --- LÓGICA DE CARGA ---
@@ -54,23 +57,53 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     }
   }
 
-  // --- NUEVA LÓGICA DE EQUIPAMIENTO ---
+  // --- LÓGICA DE FAVORITOS (NUEVO) ---
+  void _onToggleFavoriteAction(
+    ToggleFavoriteActionEvent event,
+    Emitter<CharacterState> emit,
+  ) {
+    final CharacterState currentState = state;
+    if (currentState is! CharacterLoaded) return;
+
+    final Character currentCharacter = currentState.character;
+
+    // Creamos una copia modificable de la lista actual de favoritos
+    final List<String> currentFavs = List<String>.from(
+      currentCharacter.favoriteActionIds,
+    );
+    final String actionId = event.actionId;
+
+    if (currentFavs.contains(actionId)) {
+      currentFavs.remove(actionId); // Si ya es favorito, lo quitamos
+    } else {
+      currentFavs.add(actionId); // Si no lo es, lo añadimos
+    }
+
+    // Emitimos el nuevo estado con la lista actualizada
+    emit(
+      CharacterLoaded(
+        currentCharacter.copyWith(favoriteActionIds: currentFavs),
+      ),
+    );
+  }
+
+  // --- LÓGICA DE EQUIPAMIENTO ---
   void _onToggleEquipItem(
     ToggleEquipItemEvent event,
     Emitter<CharacterState> emit,
   ) {
-    final currentState = state;
+    final CharacterState currentState = state;
     // Solo actuamos si el personaje ya está cargado
     if (currentState is! CharacterLoaded) return;
 
-    final currentCharacter = currentState.character;
-    final itemToToggle = event.item;
+    final Character currentCharacter = currentState.character;
+    final Item itemToToggle = event.item;
 
     // Determinamos la intención: Si está equipado, queremos false. Si no, true.
     final bool willEquip = !_isItemEquipped(itemToToggle);
 
     // Creamos una NUEVA lista de inventario iterando sobre la actual
-    final List<Item> newInventory = currentCharacter.inventory.map((item) {
+    final List<Item> newInventory = currentCharacter.inventory.map((Item item) {
       // 1. Caso: Es el item que el usuario tocó
       if (item.id == itemToToggle.id) {
         return _setItemEquippedStatus(item, willEquip);
