@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../domain/entities/character.dart';
+import '../../../domain/entities/character.dart';
 
 class CharacterBio extends StatelessWidget {
   final Character character;

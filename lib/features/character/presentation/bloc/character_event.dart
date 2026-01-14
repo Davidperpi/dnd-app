@@ -27,3 +27,12 @@ class ToggleEquipItemEvent extends CharacterEvent {
   @override
   List<Object> get props => <Object>[item];
 }
+
+class ToggleFavoriteActionEvent extends CharacterEvent {
+  final String actionId;
+
+  const ToggleFavoriteActionEvent(this.actionId);
+
+  @override
+  List<Object> get props => <Object>[actionId];
+}

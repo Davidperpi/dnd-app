@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/skills.dart';
-import '../../domain/entities/character.dart';
+import '../../../../../core/constants/skills.dart';
+import '../../../domain/entities/character.dart';
 
 class SkillsList extends StatefulWidget {
   final Character character;

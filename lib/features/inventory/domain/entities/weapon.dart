@@ -1,12 +1,8 @@
 import 'package:dnd_app/core/constants/attributes.dart';
+import 'package:dnd_app/core/constants/damage_type.dart';
 
-// Asegúrate de importar Item y EquipmentSlot correctamente según tu estructura
 import 'equipment_slot.dart';
 import 'item.dart';
-
-// Nota: Si DamageType está en core, úsalo desde ahí. Si está aquí, está bien.
-// Pero recuerda el 'hide' si tienes colisiones.
-enum DamageType { slashing, piercing, bludgeoning, psychic }
 
 class Weapon extends Item {
   final String damageDice;
@@ -17,14 +13,11 @@ class Weapon extends Item {
   final EquipmentSlot slot;
 
   const Weapon({
-    // Super params (Item)
     required super.id,
     required super.name,
     required super.description,
     required super.weight,
     super.quantity,
-
-    // Weapon params
     required this.damageDice,
     required this.damageType,
     required this.attribute,
@@ -33,7 +26,6 @@ class Weapon extends Item {
     this.isEquipped = false,
   }) : super(type: ItemType.weapon);
 
-  /// CopyWith completo: Incluye campos del padre (Item) y del hijo (Weapon)
   Weapon copyWith({
     String? id,
     String? name,
@@ -64,7 +56,7 @@ class Weapon extends Item {
 
   @override
   List<Object?> get props => [
-    ...super.props, // Importante para que Equatable revise id, name, etc.
+    ...super.props,
     damageDice,
     damageType,
     attribute,

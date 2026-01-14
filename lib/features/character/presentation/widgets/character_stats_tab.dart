@@ -4,7 +4,7 @@ import '../../../../core/constants/attributes.dart';
 import '../../../../core/constants/damage_type.dart';
 import '../../../../core/constants/skills.dart';
 import '../../domain/entities/character.dart';
-import 'character_bio.dart';
+import 'general/character_bio.dart';
 
 class CharacterStatsTab extends StatefulWidget {
   final Character character;
