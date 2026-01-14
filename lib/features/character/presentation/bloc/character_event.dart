@@ -36,3 +36,10 @@ class ToggleFavoriteActionEvent extends CharacterEvent {
   @override
   List<Object> get props => <Object>[actionId];
 }
+
+class CastSpellEvent extends CharacterEvent {
+  final Spell spell;
+  final int slotLevel;
+
+  const CastSpellEvent(this.spell, {required this.slotLevel});
+}

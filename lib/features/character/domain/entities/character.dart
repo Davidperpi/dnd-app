@@ -1,18 +1,17 @@
+// features/character/domain/entities/character.dart
+
 // Core Imports
 import 'package:dnd_app/core/constants/attributes.dart';
 import 'package:dnd_app/core/constants/damage_type.dart';
 import 'package:dnd_app/core/constants/skills.dart';
-// Importamos las acciones estándar (Master Data)
 import 'package:dnd_app/core/constants/standard_actions.dart';
+// Feature Imports (Usamos rutas absolutas para evitar errores de imports relativos cruzados)
+import 'package:dnd_app/features/character/domain/entities/character_action.dart';
+import 'package:dnd_app/features/inventory/domain/entities/armor.dart';
+import 'package:dnd_app/features/inventory/domain/entities/item.dart';
+import 'package:dnd_app/features/inventory/domain/entities/weapon.dart';
+import 'package:dnd_app/features/spells/domain/entities/spell.dart';
 import 'package:equatable/equatable.dart';
-
-// Inventory Feature Imports
-import '../../../inventory/domain/entities/armor.dart';
-import '../../../inventory/domain/entities/item.dart';
-// Ya no hace falta el 'hide' porque hemos borrado el enum duplicado en weapon.dart
-import '../../../inventory/domain/entities/weapon.dart';
-// Importamos la definición de Acción
-import 'character_action.dart';
 
 class Character extends Equatable {
   final String id;
@@ -34,6 +33,8 @@ class Character extends Equatable {
   final int wisdom;
   final int charisma;
 
+  final Attribute? spellcastingAbility;
+
   final List<Attribute> proficientSaves;
   final String description;
   final String imageUrl;
@@ -45,12 +46,18 @@ class Character extends Equatable {
   // --- INVENTARIO ---
   final List<Item> inventory;
 
+  // --- DEFENSAS ---
   final List<DamageType> resistances;
   final List<DamageType> immunities;
   final List<DamageType> vulnerabilities;
 
-  // --- NUEVO: SISTEMA DE FAVORITOS ---
+  // --- FAVORITOS ---
   final List<String> favoriteActionIds;
+
+  // --- MAGIA ---
+  final List<Spell> knownSpells;
+  final Map<int, int> spellSlotsMax;
+  final Map<int, int> spellSlotsCurrent;
 
   // --- Constructor ---
   const Character({
@@ -68,6 +75,7 @@ class Character extends Equatable {
     required this.intelligence,
     required this.wisdom,
     required this.charisma,
+    this.spellcastingAbility,
     required this.proficientSaves,
     required this.description,
     required this.imageUrl,
@@ -79,7 +87,10 @@ class Character extends Equatable {
     this.resistances = const <DamageType>[],
     this.immunities = const <DamageType>[],
     this.vulnerabilities = const <DamageType>[],
-    this.favoriteActionIds = const <String>[], // Default vacío
+    this.favoriteActionIds = const <String>[],
+    this.knownSpells = const <Spell>[],
+    this.spellSlotsMax = const <int, int>{},
+    this.spellSlotsCurrent = const <int, int>{},
   }) : assert(currentHp >= 0, 'HP cannot be negative'),
        assert(maxHp > 0, 'Max HP must be positive');
 
@@ -87,7 +98,6 @@ class Character extends Equatable {
 
   bool get isDead => currentHp == 0;
   bool get isBloodied => currentHp <= (maxHp / 2) && currentHp > 0;
-
   double get healthPercentage => (currentHp / maxHp).clamp(0.0, 1.0);
 
   // Helpers de Stats
@@ -144,13 +154,10 @@ class Character extends Equatable {
     return baseAC;
   }
 
-  // --- LÓGICA DE INVENTARIO Y COMBATE ---
-
+  // --- LÓGICA DE INVENTARIO ---
   List<Weapon> get weapons => inventory.whereType<Weapon>().toList();
-
   List<Weapon> get equippedWeapons =>
       weapons.where((Weapon w) => w.isEquipped).toList();
-
   Armor? get equippedArmor {
     final Iterable<Armor> armors = inventory.whereType<Armor>().where(
       (Armor a) => a.isEquipped,
@@ -158,6 +165,7 @@ class Character extends Equatable {
     return armors.isNotEmpty ? armors.first : null;
   }
 
+  // --- LÓGICA DE COMBATE (FÍSICO) ---
   int getAttackBonus(Weapon weapon) {
     final int mod = getModifier(getScore(weapon.attribute));
     return mod + (weapon.isProficient ? proficiencyBonus : 0);
@@ -167,7 +175,26 @@ class Character extends Equatable {
     return getModifier(getScore(weapon.attribute));
   }
 
-  // --- LÓGICA DE ACCIONES (Fase 1: Física y Universal + Favoritos) ---
+  // --- LÓGICA DE MAGIA (SPELLS) - DINÁMICA ---
+
+  int get spellAttackBonus {
+    // Si no tiene característica de lanzamiento (es un guerrero puro), bono es 0
+    if (spellcastingAbility == null) return 0;
+
+    // Calculamos dinámicamente basado en la característica configurada
+    final int score = getScore(spellcastingAbility!);
+    return getModifier(score) + proficiencyBonus;
+  }
+
+  int get spellSaveDC {
+    if (spellcastingAbility == null) return 0;
+
+    final int score = getScore(spellcastingAbility!);
+    // Fórmula 5e: 8 + Modificador + Competencia
+    return 8 + getModifier(score) + proficiencyBonus;
+  }
+
+  // --- LÓGICA DE ACCIONES (Fase 2: Física + Universal + Mágica + Favoritos) ---
 
   List<CharacterAction> get actions {
     final List<CharacterAction> computedActions = <CharacterAction>[];
@@ -176,7 +203,6 @@ class Character extends Equatable {
     for (final Weapon weapon in equippedWeapons) {
       final int hitBonus = getAttackBonus(weapon);
       final int dmgMod = getDamageModifier(weapon);
-
       final String dmgSign = dmgMod >= 0 ? '+' : '-';
       final String finalDice = '${weapon.damageDice} $dmgSign ${dmgMod.abs()}';
 
@@ -190,40 +216,46 @@ class Character extends Equatable {
           diceNotation: finalDice,
           damageType: weapon.damageType,
           toHitModifier: hitBonus,
-          imageUrl: null, // Asumimos null por ahora (la UI pone icono)
+          imageUrl: null,
         ),
       );
     }
 
-    // 2. Acciones Universales (Desde Master Data)
+    // 2. Acciones de Conjuros (MAPPER)
+    for (final Spell spell in knownSpells) {
+      computedActions.add(_mapSpellToAction(spell));
+    }
+
+    // 3. Acciones Universales
     computedActions.addAll(StandardActions.all);
 
-    // 3. APLICACIÓN DE FAVORITOS (Mapeo Final)
-    // Cruzamos la lista generada con la lista de IDs favoritos del personaje
-    return computedActions.map((action) {
+    // 4. APLICACIÓN DE FAVORITOS
+    return computedActions.map((CharacterAction action) {
       final bool isFav = favoriteActionIds.contains(action.id);
-
-      // Si el estado de favorito coincide, devolvemos la instancia original (eficiencia)
       if (action.isFavorite == isFav) return action;
-
-      // Si no, creamos una nueva instancia con el flag actualizado
-      return CharacterAction(
-        id: action.id,
-        name: action.name,
-        description: action.description,
-        type: action.type,
-        cost: action.cost,
-        diceNotation: action.diceNotation,
-        damageType: action.damageType,
-        toHitModifier: action.toHitModifier,
-        imageUrl: action.imageUrl,
-        isFavorite: isFav,
-      );
+      return action.copyWith(isFavorite: isFav);
     }).toList();
   }
 
-  // --- LÓGICA DE SKILLS (Helpers) ---
+  // Adaptador Privado: Spell -> CharacterAction
+  CharacterAction _mapSpellToAction(Spell spell) {
+    final int? hitMod = spell.requiresAttackRoll ? spellAttackBonus : null;
 
+    return CharacterAction(
+      id: spell.id,
+      name: spell.name,
+      description: spell.description,
+      type: ActionType.spell,
+      cost: spell.castTime,
+      diceNotation: spell.damageDice,
+      damageType: spell.damageType,
+      toHitModifier: hitMod,
+      imageUrl: null,
+      spellLevel: spell.level,
+    );
+  }
+
+  // --- Helpers Skills ---
   Attribute getAttributeForSkill(Skill skill) {
     return switch (skill) {
       Skill.athletics => Attribute.strength,
@@ -250,7 +282,6 @@ class Character extends Equatable {
   int getSkillBonus(Skill skill) {
     final Attribute associatedAttr = getAttributeForSkill(skill);
     final int baseMod = getModifier(getScore(associatedAttr));
-
     if (expertSkills.contains(skill)) return baseMod + (proficiencyBonus * 2);
     if (proficientSkills.contains(skill)) return baseMod + proficiencyBonus;
     if (hasJackOfAllTrades) return baseMod + (proficiencyBonus ~/ 2);
@@ -275,6 +306,7 @@ class Character extends Equatable {
     int? intelligence,
     int? wisdom,
     int? charisma,
+    Attribute? spellcastingAbility,
     List<Attribute>? proficientSaves,
     String? description,
     String? imageUrl,
@@ -287,6 +319,9 @@ class Character extends Equatable {
     List<DamageType>? immunities,
     List<DamageType>? vulnerabilities,
     List<String>? favoriteActionIds,
+    List<Spell>? knownSpells,
+    Map<int, int>? spellSlotsMax,
+    Map<int, int>? spellSlotsCurrent,
   }) {
     return Character(
       id: id ?? this.id,
@@ -303,6 +338,7 @@ class Character extends Equatable {
       intelligence: intelligence ?? this.intelligence,
       wisdom: wisdom ?? this.wisdom,
       charisma: charisma ?? this.charisma,
+      spellcastingAbility: spellcastingAbility ?? this.spellcastingAbility,
       proficientSaves: proficientSaves ?? this.proficientSaves,
       inventory: inventory ?? this.inventory,
       description: description ?? this.description,
@@ -315,6 +351,9 @@ class Character extends Equatable {
       immunities: immunities ?? this.immunities,
       vulnerabilities: vulnerabilities ?? this.vulnerabilities,
       favoriteActionIds: favoriteActionIds ?? this.favoriteActionIds,
+      knownSpells: knownSpells ?? this.knownSpells,
+      spellSlotsMax: spellSlotsMax ?? this.spellSlotsMax,
+      spellSlotsCurrent: spellSlotsCurrent ?? this.spellSlotsCurrent,
     );
   }
 
@@ -335,6 +374,7 @@ class Character extends Equatable {
     intelligence,
     wisdom,
     charisma,
+    spellcastingAbility,
     proficientSaves,
     inventory,
     description,
@@ -347,5 +387,8 @@ class Character extends Equatable {
     immunities,
     vulnerabilities,
     favoriteActionIds,
+    knownSpells,
+    spellSlotsMax,
+    spellSlotsCurrent,
   ];
 }
