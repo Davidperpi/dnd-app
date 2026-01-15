@@ -1,6 +1,6 @@
+import 'package:dnd_app/features/character/data/repositories/character_repository_impl.dart';
 import 'package:get_it/get_it.dart';
 
-import 'features/character/data/repositories/mock_character_repository.dart';
 import 'features/character/domain/repositories/character_repository.dart';
 import 'features/character/domain/usecases/get_character.dart';
 import 'features/character/presentation/bloc/character_bloc.dart';
@@ -18,6 +18,6 @@ Future<void> init() async {
 
   // Repository
   sl.registerLazySingleton<CharacterRepository>(
-    () => MockCharacterRepository(),
+    () => CharacterRepositoryImpl(),
   );
 }

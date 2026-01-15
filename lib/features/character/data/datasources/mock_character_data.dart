@@ -2,9 +2,9 @@ import 'package:dnd_app/core/constants/attributes.dart';
 import 'package:dnd_app/core/constants/damage_type.dart';
 import 'package:dnd_app/core/constants/skills.dart';
 import 'package:dnd_app/features/character/domain/entities/character_resource.dart';
-import 'package:dnd_app/features/inventory/data/repositories/mock_items.dart';
+import 'package:dnd_app/features/inventory/data/datasources/mock_items_datasource.dart';
 import 'package:dnd_app/features/inventory/domain/entities/item.dart';
-import 'package:dnd_app/features/spells/domain/data/mock_spells.dart';
+import 'package:dnd_app/features/spells/data/datasources/mock_spells_datasource.dart';
 import 'package:dnd_app/features/spells/domain/entities/spell.dart';
 
 import '../../domain/entities/character.dart';

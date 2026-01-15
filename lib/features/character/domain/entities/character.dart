@@ -5,12 +5,12 @@ import 'package:dnd_app/core/constants/attributes.dart';
 import 'package:dnd_app/core/constants/damage_type.dart';
 import 'package:dnd_app/core/constants/skills.dart';
 import 'package:dnd_app/core/constants/standard_actions.dart';
+import 'package:dnd_app/features/character/data/datasources/character_ability_local_data_source.dart';
 // Data Imports (Excepción controlada para Static Registry)
-import 'package:dnd_app/features/character/data/datasources/character_features_local_data_source.dart';
+import 'package:dnd_app/features/character/domain/entities/character_ability.dart';
 // Feature Imports
 import 'package:dnd_app/features/character/domain/entities/character_action.dart';
 import 'package:dnd_app/features/character/domain/entities/character_resource.dart';
-import 'package:dnd_app/features/character/domain/entities/feature_definition.dart';
 import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 import 'package:dnd_app/features/inventory/domain/entities/armor.dart';
 import 'package:dnd_app/features/inventory/domain/entities/item.dart';
@@ -319,8 +319,8 @@ class Character extends Equatable {
     // 3. Rasgos de Clase (Features)
     for (final MapEntry<String, CharacterResource> entry in resources.entries) {
       final String resourceId = entry.key;
-      final FeatureDefinition? definition =
-          CharacterFeaturesLocalDataSource.registry[resourceId];
+      final CharacterAbility? definition =
+          CharacterAbilityLocalDataSource.registry[resourceId];
 
       if (definition != null) {
         CharacterAction action = definition.actionTemplate;

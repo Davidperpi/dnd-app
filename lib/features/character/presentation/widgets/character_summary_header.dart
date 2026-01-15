@@ -1,6 +1,7 @@
-import 'package:dnd_app/features/character/data/datasources/character_features_local_data_source.dart';
+
+import 'package:dnd_app/features/character/data/datasources/character_ability_local_data_source.dart';
+import 'package:dnd_app/features/character/domain/entities/character_ability.dart';
 import 'package:dnd_app/features/character/domain/entities/character_resource.dart';
-import 'package:dnd_app/features/character/domain/entities/feature_definition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -238,8 +239,8 @@ class CharacterSummaryHeader extends StatelessWidget {
         spacing: 12,
         runSpacing: 6,
         children: character.resources.values.map((CharacterResource resource) {
-          final FeatureDefinition? definition =
-              CharacterFeaturesLocalDataSource.registry[resource.id];
+          final CharacterAbility? definition =
+              CharacterAbilityLocalDataSource.registry[resource.id];
           // Usamos el nombre corto si es muy largo, o las 3 primeras letras
           final String label =
               definition?.shortName ??

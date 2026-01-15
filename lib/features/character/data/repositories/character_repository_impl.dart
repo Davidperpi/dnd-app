@@ -6,7 +6,7 @@ import '../../domain/repositories/character_repository.dart';
 // Importamos solo el dato final
 import '../datasources/mock_character_data.dart';
 
-class MockCharacterRepository implements CharacterRepository {
+class CharacterRepositoryImpl implements CharacterRepository {
   @override
   Future<Either<Failure, Character>> getCharacter() async {
     // Simulamos latencia de red

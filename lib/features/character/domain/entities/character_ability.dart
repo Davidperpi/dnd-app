@@ -1,7 +1,7 @@
 import 'package:dnd_app/features/character/domain/entities/character_action.dart';
 import 'package:dnd_app/features/character/domain/entities/character_resource.dart'; // Para RefreshRule
 
-class FeatureDefinition {
+class CharacterAbility {
   final String id;
   final String name;
   final String? shortName;
@@ -10,7 +10,7 @@ class FeatureDefinition {
   final CharacterAction actionTemplate;
   final Map<int, String>? levelScaling;
 
-  const FeatureDefinition({
+  const CharacterAbility({
     required this.id,
     required this.name,
     this.shortName,

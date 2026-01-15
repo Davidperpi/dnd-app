@@ -1,15 +1,15 @@
 import 'package:dnd_app/features/character/domain/entities/character_action.dart';
 import 'package:dnd_app/features/character/domain/entities/character_resource.dart';
-import 'package:dnd_app/features/character/domain/entities/feature_definition.dart';
+import 'package:dnd_app/features/character/domain/entities/character_ability.dart';
 import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 
-/// Fuente de datos LOCAL que contiene el "Manual de Reglas" de las Features.
+/// Fuente de datos LOCAL que contiene el "Manual de Reglas" de las Habilidades de Personaje.
 /// Actúa como un registro estático de definiciones.
-class CharacterFeaturesLocalDataSource {
-  static final Map<String, FeatureDefinition>
-  registry = <String, FeatureDefinition>{
+class CharacterAbilityLocalDataSource {
+  static final Map<String, CharacterAbility>
+  registry = <String, CharacterAbility>{
     // --- BARDO (Colegio de Espadas) ---
-    'bardic_inspiration': const FeatureDefinition(
+    'bardic_inspiration': const CharacterAbility(
       id: 'bardic_inspiration',
       name: 'Inspiración Bárdica',
       shortName: 'IB',
@@ -29,7 +29,7 @@ class CharacterFeaturesLocalDataSource {
     ),
 
     // --- GUERRERO (Ejemplo futuro) ---
-    'second_wind': const FeatureDefinition(
+    'second_wind': const CharacterAbility(
       id: 'second_wind',
       name: 'Tomar Aliento',
       description: 'Recuperas 1d10 + Nivel HP.',
