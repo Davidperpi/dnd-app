@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-enum RefreshRule { shortRest, longRest, dawn, never }
+enum RefreshRule { shortRest, longRest, dawn, passive, never }
 
 class CharacterResource extends Equatable {
   final String id; // ej: 'spell_slots_1', 'bardic_inspiration', 'action_surge'

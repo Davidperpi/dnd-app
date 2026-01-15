@@ -27,5 +27,5 @@ class Potion extends Item {
   }
 
   @override
-  List<Object?> get props => [...super.props, diceNotation];
+  List<Object?> get props => <Object?>[...super.props, diceNotation];
 }

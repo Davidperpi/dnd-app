@@ -4,7 +4,7 @@ sealed class CharacterState extends Equatable {
   const CharacterState();
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => <Object>[];
 }
 
 final class CharacterInitial extends CharacterState {}
@@ -17,7 +17,7 @@ final class CharacterLoaded extends CharacterState {
   const CharacterLoaded(this.character);
 
   @override
-  List<Object> get props => [character];
+  List<Object> get props => <Object>[character];
 }
 
 final class CharacterError extends CharacterState {
@@ -26,5 +26,5 @@ final class CharacterError extends CharacterState {
   const CharacterError(this.message);
 
   @override
-  List<Object> get props => [message];
+  List<Object> get props => <Object>[message];
 }

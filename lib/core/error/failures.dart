@@ -6,7 +6,7 @@ abstract class Failure extends Equatable {
   const Failure(this.message);
 
   @override
-  List<Object> get props => [message];
+  List<Object> get props => <Object>[message];
 }
 
 class ServerFailure extends Failure {

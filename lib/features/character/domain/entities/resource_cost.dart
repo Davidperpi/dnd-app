@@ -9,7 +9,7 @@ class SpellSlotCost extends ResourceCost {
   const SpellSlotCost(this.level);
 
   @override
-  List<Object?> get props => [level];
+  List<Object?> get props => <Object?>[level];
 }
 
 class FeatureResourceCost extends ResourceCost {
@@ -19,7 +19,7 @@ class FeatureResourceCost extends ResourceCost {
   const FeatureResourceCost(this.resourceId, {this.amount = 1});
 
   @override
-  List<Object?> get props => [resourceId, amount];
+  List<Object?> get props => <Object?>[resourceId, amount];
 }
 
 class ItemCost extends ResourceCost {
@@ -29,5 +29,5 @@ class ItemCost extends ResourceCost {
   const ItemCost(this.itemId, {this.amount = 1});
 
   @override
-  List<Object?> get props => [itemId, amount];
+  List<Object?> get props => <Object?>[itemId, amount];
 }
