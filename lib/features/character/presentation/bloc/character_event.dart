@@ -7,11 +7,10 @@ abstract class CharacterEvent extends Equatable {
   List<Object> get props => <Object>[];
 }
 
-/// Evento inicial para cargar los datos de Aidan
 class GetCharacterEvent extends CharacterEvent {}
 
 class UpdateHealthEvent extends CharacterEvent {
-  final int amount; // Puede ser positivo (curar) o negativo (daño)
+  final int amount;
 
   const UpdateHealthEvent(this.amount);
 
@@ -42,4 +41,40 @@ class CastSpellEvent extends CharacterEvent {
   final int slotLevel;
 
   const CastSpellEvent(this.spell, {required this.slotLevel});
+}
+
+/// Evento para consumir un objeto del inventario (Poción, Pergamino)
+class ConsumeItemEvent extends CharacterEvent {
+  final String itemId;
+
+  const ConsumeItemEvent({required this.itemId});
+
+  @override
+  List<Object> get props => <Object>[itemId];
+}
+
+/// Evento para gastar un recurso de clase (Inspiración, Ki, Maniobras)
+class UseFeatureEvent extends CharacterEvent {
+  final String resourceId;
+
+  const UseFeatureEvent({required this.resourceId});
+
+  @override
+  List<Object> get props => <Object>[resourceId];
+}
+
+sealed class RestEvent extends CharacterEvent {
+  const RestEvent();
+}
+
+class PerformShortRestEvent extends RestEvent {
+  const PerformShortRestEvent();
+  @override
+  List<Object> get props => <Object>[];
+}
+
+class PerformLongRestEvent extends RestEvent {
+  const PerformLongRestEvent();
+  @override
+  List<Object> get props => <Object>[];
 }

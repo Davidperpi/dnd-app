@@ -1,5 +1,6 @@
 import 'package:dnd_app/features/character/presentation/widgets/character_actions_tab.dart';
 import 'package:dnd_app/features/character/presentation/widgets/character_inventory_tab.dart';
+import 'package:dnd_app/features/character/presentation/widgets/rest_menu_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -38,9 +39,7 @@ class CharacterView extends StatelessWidget {
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
             onPressed: () {},
           ),
-          actions: <Widget>[
-            IconButton(icon: const Icon(Icons.menu), onPressed: () {}),
-          ],
+          actions: const <Widget>[RestMenuButton(), SizedBox(width: 8)],
           backgroundColor: Colors.transparent,
           elevation: 0,
         ),

@@ -1,4 +1,5 @@
 import 'package:dnd_app/core/constants/damage_type.dart';
+import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 import 'package:equatable/equatable.dart';
 
 enum ActionType { attack, spell, feature, utility }
@@ -16,7 +17,9 @@ class CharacterAction extends Equatable {
   final DamageType? damageType;
   final int? toHitModifier;
   final String? imageUrl;
-  final int? spellLevel;
+  final ResourceCost? resourceCost;
+  final int? remainingUses;
+  final int? maxUses;
 
   const CharacterAction({
     required this.id,
@@ -29,7 +32,9 @@ class CharacterAction extends Equatable {
     this.toHitModifier,
     this.imageUrl,
     this.isFavorite = false,
-    this.spellLevel,
+    this.resourceCost,
+    this.remainingUses, // <--- Nuevo
+    this.maxUses,
   });
 
   CharacterAction copyWith({
@@ -43,7 +48,9 @@ class CharacterAction extends Equatable {
     DamageType? damageType,
     int? toHitModifier,
     String? imageUrl,
-    int? spellLevel,
+    ResourceCost? resourceCost,
+    int? remainingUses,
+    int? maxUses,
   }) {
     return CharacterAction(
       id: id ?? this.id,
@@ -56,7 +63,9 @@ class CharacterAction extends Equatable {
       damageType: damageType ?? this.damageType,
       toHitModifier: toHitModifier ?? this.toHitModifier,
       imageUrl: imageUrl ?? this.imageUrl,
-      spellLevel: spellLevel ?? this.spellLevel,
+      resourceCost: resourceCost ?? this.resourceCost,
+      remainingUses: remainingUses ?? this.remainingUses,
+      maxUses: maxUses ?? this.maxUses,
     );
   }
 
@@ -72,6 +81,8 @@ class CharacterAction extends Equatable {
     toHitModifier,
     imageUrl,
     isFavorite,
-    spellLevel,
+    resourceCost,
+    remainingUses,
+    maxUses,
   ];
 }

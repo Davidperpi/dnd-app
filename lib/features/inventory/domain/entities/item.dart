@@ -10,6 +10,7 @@ abstract class Item extends Equatable {
   final double weight;
   final ItemType type;
   final int quantity;
+  final bool isConsumable;
 
   const Item({
     required this.id,
@@ -18,7 +19,10 @@ abstract class Item extends Equatable {
     required this.weight,
     required this.type,
     this.quantity = 1,
+    this.isConsumable = false,
   });
+
+  Item copyWith({int? quantity});
 
   @override
   List<Object?> get props => <Object?>[
@@ -28,5 +32,6 @@ abstract class Item extends Equatable {
     weight,
     type,
     quantity,
+    isConsumable,
   ];
 }

@@ -5,8 +5,13 @@ import 'package:dnd_app/core/constants/attributes.dart';
 import 'package:dnd_app/core/constants/damage_type.dart';
 import 'package:dnd_app/core/constants/skills.dart';
 import 'package:dnd_app/core/constants/standard_actions.dart';
-// Feature Imports (Usamos rutas absolutas para evitar errores de imports relativos cruzados)
+// Data Imports (Excepción controlada para Static Registry)
+import 'package:dnd_app/features/character/data/datasources/character_features_local_data_source.dart';
+// Feature Imports
 import 'package:dnd_app/features/character/domain/entities/character_action.dart';
+import 'package:dnd_app/features/character/domain/entities/character_resource.dart';
+import 'package:dnd_app/features/character/domain/entities/feature_definition.dart';
+import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 import 'package:dnd_app/features/inventory/domain/entities/armor.dart';
 import 'package:dnd_app/features/inventory/domain/entities/item.dart';
 import 'package:dnd_app/features/inventory/domain/entities/weapon.dart';
@@ -59,6 +64,9 @@ class Character extends Equatable {
   final Map<int, int> spellSlotsMax;
   final Map<int, int> spellSlotsCurrent;
 
+  // --- RECURSOS ---
+  final Map<String, CharacterResource> resources;
+
   // --- Constructor ---
   const Character({
     required this.id,
@@ -91,6 +99,7 @@ class Character extends Equatable {
     this.knownSpells = const <Spell>[],
     this.spellSlotsMax = const <int, int>{},
     this.spellSlotsCurrent = const <int, int>{},
+    this.resources = const <String, CharacterResource>{},
   }) : assert(currentHp >= 0, 'HP cannot be negative'),
        assert(maxHp > 0, 'Max HP must be positive');
 
@@ -120,6 +129,92 @@ class Character extends Equatable {
     final int baseMod = getModifier(score);
     final bool isProficient = proficientSaves.contains(attribute);
     return baseMod + (isProficient ? proficiencyBonus : 0);
+  }
+
+  // --- LÓGICA DE NEGOCIO (State Mutation Methods) ---
+
+  /// Consume un recurso de clase (ej. Inspiración, Ki).
+  /// Retorna una nueva instancia de Character.
+  Character useResource(String resourceId) {
+    if (!resources.containsKey(resourceId)) return this;
+
+    final CharacterResource resource = resources[resourceId]!;
+    if (resource.current <= 0) return this;
+
+    // Actualizamos el recurso
+    final CharacterResource updatedResource = resource.copyWith(
+      current: resource.current - 1,
+    );
+
+    // Creamos nuevo mapa inmutable
+    final Map<String, CharacterResource> newResources = Map.of(resources);
+    newResources[resourceId] = updatedResource;
+
+    return copyWith(resources: newResources);
+  }
+
+  /// Consume una unidad de un item del inventario.
+  /// Retorna una nueva instancia de Character.
+  Character consumeItem(String itemId) {
+    final int index = inventory.indexWhere((Item i) => i.id == itemId);
+    if (index == -1) return this;
+
+    final Item item = inventory[index];
+    if (item.quantity <= 0) return this;
+
+    // Usamos el método abstracto copyWith para actualizar cantidad
+    final Item updatedItem = item.copyWith(quantity: item.quantity - 1);
+
+    // Reconstruimos la lista de inventario
+    final List<Item> newInventory = List.of(inventory);
+    newInventory[index] = updatedItem;
+
+    return copyWith(inventory: newInventory);
+  }
+
+  // --- SISTEMA DE DESCANSO ---
+
+  /// DESCANSAR LARGO (8h):
+  /// - Recupera toda la vida.
+  /// - Recupera todos los Spell Slots.
+  /// - Recupera todos los Recursos (sin importar su regla).
+  Character recoverLongRest() {
+    // 1. Recuperar Recursos (Inspiración, etc.)
+    final Map<String, CharacterResource> refreshedResources =
+        <String, CharacterResource>{};
+
+    for (final MapEntry<String, CharacterResource> entry in resources.entries) {
+      // Descanso largo
+      refreshedResources[entry.key] = entry.value.copyWith(
+        current: entry.value.max,
+      );
+    }
+
+    // 2. Recuperar Espacios de Conjuro (Reset total)
+    // Copiamos el mapa de Máximos al de Actuales
+    final Map<int, int> refreshedSlots = Map.of(spellSlotsMax);
+
+    return copyWith(
+      currentHp: maxHp, // Vida a tope
+      spellSlotsCurrent: refreshedSlots,
+      resources: refreshedResources,
+    );
+  }
+
+  // Descanso corto:
+  Character recoverShortRest() {
+    final Map<String, CharacterResource> refreshedResources = Map.of(resources);
+
+    for (final MapEntry<String, CharacterResource> entry in resources.entries) {
+      // Solo recuperamos si la regla es ShortRest
+      if (entry.value.refresh == RefreshRule.shortRest) {
+        refreshedResources[entry.key] = entry.value.copyWith(
+          current: entry.value.max,
+        );
+      }
+    }
+
+    return copyWith(resources: refreshedResources);
   }
 
   // --- LÓGICA DE ARMADURA (AC) ---
@@ -175,31 +270,25 @@ class Character extends Equatable {
     return getModifier(getScore(weapon.attribute));
   }
 
-  // --- LÓGICA DE MAGIA (SPELLS) - DINÁMICA ---
-
+  // --- LÓGICA DE MAGIA (SPELLS) ---
   int get spellAttackBonus {
-    // Si no tiene característica de lanzamiento (es un guerrero puro), bono es 0
     if (spellcastingAbility == null) return 0;
-
-    // Calculamos dinámicamente basado en la característica configurada
     final int score = getScore(spellcastingAbility!);
     return getModifier(score) + proficiencyBonus;
   }
 
   int get spellSaveDC {
     if (spellcastingAbility == null) return 0;
-
     final int score = getScore(spellcastingAbility!);
-    // Fórmula 5e: 8 + Modificador + Competencia
     return 8 + getModifier(score) + proficiencyBonus;
   }
 
-  // --- LÓGICA DE ACCIONES (Fase 2: Física + Universal + Mágica + Favoritos) ---
+  // --- LÓGICA DE ACCIONES (Generador Dinámico) ---
 
   List<CharacterAction> get actions {
     final List<CharacterAction> computedActions = <CharacterAction>[];
 
-    // 1. Acciones de Armas
+    // 1. Armas
     for (final Weapon weapon in equippedWeapons) {
       final int hitBonus = getAttackBonus(weapon);
       final int dmgMod = getDamageModifier(weapon);
@@ -217,19 +306,59 @@ class Character extends Equatable {
           damageType: weapon.damageType,
           toHitModifier: hitBonus,
           imageUrl: null,
+          resourceCost: null,
         ),
       );
     }
 
-    // 2. Acciones de Conjuros (MAPPER)
+    // 2. Conjuros
     for (final Spell spell in knownSpells) {
       computedActions.add(_mapSpellToAction(spell));
     }
 
-    // 3. Acciones Universales
+    // 3. Rasgos de Clase (Features)
+    for (final MapEntry<String, CharacterResource> entry in resources.entries) {
+      final String resourceId = entry.key;
+      final FeatureDefinition? definition =
+          CharacterFeaturesLocalDataSource.registry[resourceId];
+
+      if (definition != null) {
+        CharacterAction action = definition.actionTemplate;
+
+        // --- LÓGICA DE ESCALADO GENÉRICA ---
+        if (definition.levelScaling != null) {
+          final List<int> applicableLevels = definition.levelScaling!.keys
+              .where((int lvl) => level >= lvl)
+              .toList();
+
+          if (applicableLevels.isNotEmpty) {
+            applicableLevels.sort();
+            final int bestLevel = applicableLevels.last;
+            final String newDice = definition.levelScaling![bestLevel]!;
+            action = action.copyWith(diceNotation: newDice);
+          }
+        }
+
+        action = action.copyWith(
+          remainingUses: entry.value.current,
+          maxUses: entry.value.max,
+        );
+
+        computedActions.add(action);
+      }
+    }
+    // 4. Consumibles
+    for (final Item item in inventory) {
+      // Solo mostramos items consumibles que tengan stock
+      if (item.isConsumable && item.quantity > 0) {
+        computedActions.add(_mapConsumableToAction(item));
+      }
+    }
+
+    // 5. Universales
     computedActions.addAll(StandardActions.all);
 
-    // 4. APLICACIÓN DE FAVORITOS
+    // 6. Favoritos
     return computedActions.map((CharacterAction action) {
       final bool isFav = favoriteActionIds.contains(action.id);
       if (action.isFavorite == isFav) return action;
@@ -237,9 +366,12 @@ class Character extends Equatable {
     }).toList();
   }
 
-  // Adaptador Privado: Spell -> CharacterAction
+  // Adaptador Spell -> Action
   CharacterAction _mapSpellToAction(Spell spell) {
     final int? hitMod = spell.requiresAttackRoll ? spellAttackBonus : null;
+    final ResourceCost? cost = spell.level > 0
+        ? SpellSlotCost(spell.level)
+        : null;
 
     return CharacterAction(
       id: spell.id,
@@ -251,7 +383,21 @@ class Character extends Equatable {
       damageType: spell.damageType,
       toHitModifier: hitMod,
       imageUrl: null,
-      spellLevel: spell.level,
+      resourceCost: cost,
+    );
+  }
+
+  // Adaptador Item -> Action
+  CharacterAction _mapConsumableToAction(Item item) {
+    return CharacterAction(
+      id: 'use_${item.id}',
+      name: 'Usar ${item.name}',
+      description: item.description,
+      type: ActionType.utility,
+      cost: ActionCost.action,
+      resourceCost: ItemCost(item.id, amount: 1),
+      imageUrl: null,
+      remainingUses: item.quantity,
     );
   }
 
@@ -322,6 +468,7 @@ class Character extends Equatable {
     List<Spell>? knownSpells,
     Map<int, int>? spellSlotsMax,
     Map<int, int>? spellSlotsCurrent,
+    Map<String, CharacterResource>? resources,
   }) {
     return Character(
       id: id ?? this.id,
@@ -354,6 +501,7 @@ class Character extends Equatable {
       knownSpells: knownSpells ?? this.knownSpells,
       spellSlotsMax: spellSlotsMax ?? this.spellSlotsMax,
       spellSlotsCurrent: spellSlotsCurrent ?? this.spellSlotsCurrent,
+      resources: resources ?? this.resources,
     );
   }
 
@@ -390,5 +538,6 @@ class Character extends Equatable {
     knownSpells,
     spellSlotsMax,
     spellSlotsCurrent,
+    resources,
   ];
 }

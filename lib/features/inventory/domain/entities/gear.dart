@@ -8,5 +8,17 @@ class Gear extends Item {
     required super.weight,
     super.quantity,
     super.type = ItemType.gear,
+    super.isConsumable = false,
   });
+
+  @override
+  Gear copyWith({int? quantity}) {
+    return Gear(
+      id: id,
+      name: name,
+      description: description,
+      weight: weight,
+      quantity: quantity ?? this.quantity,
+    );
+  }
 }

@@ -1,5 +1,6 @@
 import 'package:dnd_app/core/utils/screen_effects.dart';
 import 'package:dnd_app/features/character/domain/entities/character_action.dart';
+import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 import 'package:dnd_app/features/character/presentation/bloc/character_bloc.dart';
 import 'package:dnd_app/features/character/presentation/widgets/action/components/action_badges.dart';
 import 'package:dnd_app/features/character/presentation/widgets/action/components/action_visual.dart';
@@ -68,9 +69,10 @@ class ActionDetailSheet extends StatelessWidget {
                   value: action.diceNotation!,
                   color: color,
                 ),
+              // Mostramos el coste o el stock restante
               _DetailStatItem(
-                label: "COSTE",
-                value: translateActionCost(action.cost),
+                label: "USO",
+                value: _getUsageText(), // Función auxiliar para texto dinámico
                 color: Colors.grey,
               ),
             ],
@@ -121,7 +123,7 @@ class ActionDetailSheet extends StatelessWidget {
             ),
           ],
 
-          // 5. BOTÓN DE ACCIÓN PRINCIPAL (NUEVO)
+          // 5. BOTÓN DE ACCIÓN PRINCIPAL (MEJORADO)
           const SizedBox(height: 40),
           _buildActionButton(context),
         ],
@@ -129,48 +131,132 @@ class ActionDetailSheet extends StatelessWidget {
     );
   }
 
+  // --- HELPER DE TEXTO ---
+  String _getUsageText() {
+    if (action.remainingUses != null) {
+      if (action.maxUses != null) {
+        return "${action.remainingUses}/${action.maxUses}";
+      }
+      return "x${action.remainingUses}";
+    }
+    return translateActionCost(action.cost);
+  }
+
   // --- LÓGICA DEL BOTÓN DE ACCIÓN ---
 
   Widget _buildActionButton(BuildContext context) {
-    if (action.type == ActionType.feature ||
-        action.type == ActionType.utility) {
-      if (action.diceNotation == null) {
-        return const SizedBox.shrink();
-      }
-    }
+    // 1. Verificar disponibilidad (Stock)
+    final bool isAvailable =
+        action.remainingUses == null || action.remainingUses! > 0;
 
-    final bool isSpell = action.type == ActionType.spell;
-    final String label = isSpell ? "LANZAR CONJURO" : "REALIZAR ACCIÓN";
-    final IconData icon = isSpell ? Icons.auto_fix_high : Icons.flash_on;
+    // 2. Color dinámico (Gris si está agotado)
+    final Color btnColor = isAvailable
+        ? color
+        : Theme.of(context).disabledColor;
+
+    // 3. Texto e Icono Dinámicos
+    String label = "REALIZAR ACCIÓN";
+    IconData icon = Icons.flash_on;
+
+    if (!isAvailable) {
+      label = "AGOTADO";
+      icon = Icons.block;
+    } else if (action.type == ActionType.spell) {
+      label = "LANZAR CONJURO";
+      icon = Icons.auto_fix_high;
+    } else if (action.resourceCost is ItemCost) {
+      label = "USAR OBJETO";
+      icon = Icons.local_drink;
+    }
 
     return SizedBox(
       width: double.infinity,
       child: FilledButton.icon(
         style: FilledButton.styleFrom(
-          backgroundColor: color,
+          backgroundColor: btnColor,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
+          // Efecto visual de deshabilitado
+          disabledBackgroundColor: Colors.grey.withValues(alpha: 0.2),
         ),
         icon: Icon(icon),
         label: Text(
           label,
           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
         ),
-        onPressed: () => _handleAction(context),
+        // Si no está disponible, onPressed es null (lo deshabilita nativamente)
+        onPressed: isAvailable ? () => _handleAction(context) : null,
       ),
     );
   }
 
+  // DISPATCHER CENTRALIZADO (Igual que ActionQuickButton)
   void _handleAction(BuildContext context) {
+    // Cerramos el modal inmediatamente para ver el efecto en la pantalla principal
+    // EXCEPCIÓN: Si es un hechizo con selector de nivel, no cerramos aún.
+
     if (action.type == ActionType.spell) {
       _castSpell(context);
-    } else {
-      Navigator.pop(context);
-      ScreenEffects.showSlash(context, color);
-      HapticFeedback.heavyImpact();
+      return;
+    }
+
+    // Para el resto, cerramos el modal
+    Navigator.pop(context);
+
+    // Lógica según tipo
+    switch (action.type) {
+      case ActionType.attack:
+        ScreenEffects.showSlash(context, color);
+        HapticFeedback.heavyImpact();
+        break;
+
+      case ActionType.utility:
+        _handleConsumable(context);
+        break;
+
+      case ActionType.feature:
+        _handleFeature(context);
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  void _handleConsumable(BuildContext context) {
+    final ResourceCost? cost = action.resourceCost;
+    if (cost is ItemCost) {
+      ScreenEffects.showMagicBlast(context, color);
+      context.read<CharacterBloc>().add(ConsumeItemEvent(itemId: cost.itemId));
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("🧪 Usaste ${action.name}"),
+          backgroundColor: color,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  void _handleFeature(BuildContext context) {
+    final ResourceCost? cost = action.resourceCost;
+    if (cost is FeatureResourceCost) {
+      ScreenEffects.showMagicBlast(context, color);
+      context.read<CharacterBloc>().add(
+        UseFeatureEvent(resourceId: cost.resourceId),
+      );
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("⚡ ${action.name} activado"),
+          backgroundColor: color,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -182,9 +268,9 @@ class ActionDetailSheet extends StatelessWidget {
           (Spell s) => s.id == action.id,
         );
 
-        Navigator.pop(context);
-
+        // Si es truco, cerramos y lanzamos. Si es de nivel, abrimos selector.
         if (spell.level == 0) {
+          Navigator.pop(context); // Cerramos este modal
           ScreenEffects.showMagicBlast(context, color);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -194,6 +280,9 @@ class ActionDetailSheet extends StatelessWidget {
             ),
           );
         } else {
+          // Cerramos este modal antes de abrir el siguiente para no apilar sheets
+          Navigator.pop(context);
+
           showModalBottomSheet(
             context: context,
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,

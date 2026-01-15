@@ -1,4 +1,4 @@
-import 'package:equatable/equatable.dart'; // IMPORTANTE: Este import habilita Equatable en el archivo event y state
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:fpdart/fpdart.dart';
 
@@ -7,7 +7,6 @@ import '../../../inventory/domain/entities/armor.dart';
 import '../../../inventory/domain/entities/equipment_slot.dart';
 import '../../../inventory/domain/entities/item.dart';
 import '../../../inventory/domain/entities/weapon.dart';
-// Importamos la entidad Spell para usarla en la lógica
 import '../../../spells/domain/entities/spell.dart';
 import '../../domain/entities/character.dart';
 import '../../domain/usecases/get_character.dart';
@@ -25,6 +24,10 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     on<ToggleEquipItemEvent>(_onToggleEquipItem);
     on<ToggleFavoriteActionEvent>(_onToggleFavoriteAction);
     on<CastSpellEvent>(_onCastSpell);
+    on<ConsumeItemEvent>(_onConsumeItem);
+    on<UseFeatureEvent>(_onUseFeature);
+    on<PerformShortRestEvent>(_onPerformShortRest);
+    on<PerformLongRestEvent>(_onPerformLongRest);
   }
 
   // --- MÉTODOS MANEJADORES (HANDLERS) ---
@@ -126,6 +129,48 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     }).toList();
 
     emit(CharacterLoaded(currentCharacter.copyWith(inventory: newInventory)));
+  }
+
+  void _onConsumeItem(ConsumeItemEvent event, Emitter<CharacterState> emit) {
+    final CharacterState state = this.state;
+    if (state is CharacterLoaded) {
+      final Character updatedCharacter = state.character.consumeItem(
+        event.itemId,
+      );
+      emit(CharacterLoaded(updatedCharacter));
+    }
+  }
+
+  void _onUseFeature(UseFeatureEvent event, Emitter<CharacterState> emit) {
+    final CharacterState state = this.state;
+    if (state is CharacterLoaded) {
+      final Character updatedChar = state.character.useResource(
+        event.resourceId,
+      );
+      emit(CharacterLoaded(updatedChar));
+    }
+  }
+
+  void _onPerformShortRest(
+    PerformShortRestEvent event,
+    Emitter<CharacterState> emit,
+  ) {
+    if (state is CharacterLoaded) {
+      final Character updatedChar = (state as CharacterLoaded).character
+          .recoverShortRest();
+      emit(CharacterLoaded(updatedChar));
+    }
+  }
+
+  void _onPerformLongRest(
+    PerformLongRestEvent event,
+    Emitter<CharacterState> emit,
+  ) {
+    if (state is CharacterLoaded) {
+      final Character updatedChar = (state as CharacterLoaded).character
+          .recoverLongRest();
+      emit(CharacterLoaded(updatedChar));
+    }
   }
 
   // --- HELPERS PRIVADOS ---
