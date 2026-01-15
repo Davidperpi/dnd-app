@@ -16,6 +16,7 @@ class CharacterAction extends Equatable {
   final DamageType? damageType;
   final int? toHitModifier;
   final String? imageUrl;
+  final int? spellLevel;
 
   const CharacterAction({
     required this.id,
@@ -28,7 +29,36 @@ class CharacterAction extends Equatable {
     this.toHitModifier,
     this.imageUrl,
     this.isFavorite = false,
+    this.spellLevel,
   });
+
+  CharacterAction copyWith({
+    String? id,
+    String? name,
+    String? description,
+    ActionType? type,
+    ActionCost? cost,
+    bool? isFavorite,
+    String? diceNotation,
+    DamageType? damageType,
+    int? toHitModifier,
+    String? imageUrl,
+    int? spellLevel,
+  }) {
+    return CharacterAction(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      type: type ?? this.type,
+      cost: cost ?? this.cost,
+      isFavorite: isFavorite ?? this.isFavorite,
+      diceNotation: diceNotation ?? this.diceNotation,
+      damageType: damageType ?? this.damageType,
+      toHitModifier: toHitModifier ?? this.toHitModifier,
+      imageUrl: imageUrl ?? this.imageUrl,
+      spellLevel: spellLevel ?? this.spellLevel,
+    );
+  }
 
   @override
   List<Object?> get props => <Object?>[
@@ -42,5 +72,6 @@ class CharacterAction extends Equatable {
     toHitModifier,
     imageUrl,
     isFavorite,
+    spellLevel,
   ];
 }

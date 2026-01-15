@@ -1,8 +1,12 @@
+import 'package:dnd_app/core/utils/screen_effects.dart';
 import 'package:dnd_app/features/character/domain/entities/character_action.dart';
 import 'package:dnd_app/features/character/presentation/bloc/character_bloc.dart';
 import 'package:dnd_app/features/character/presentation/widgets/action/components/action_badges.dart';
 import 'package:dnd_app/features/character/presentation/widgets/action/components/action_visual.dart';
+import 'package:dnd_app/features/character/presentation/widgets/action/sheet/cast_spell_sheet.dart';
+import 'package:dnd_app/features/spells/domain/entities/spell.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ActionDetailSheet extends StatelessWidget {
@@ -18,15 +22,16 @@ class ActionDetailSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Nota: El BlocProvider ya viene inyectado desde el showModalBottomSheet
-    // en el archivo padre, así que aquí consumimos directamente.
+    // en el archivo padre (action_card.dart), así que aquí consumimos directamente.
 
     return Padding(
+      // Añadimos padding inferior extra para que el botón respire
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          // CABECERA
+          // 1. CABECERA
           Row(
             children: <Widget>[
               ActionVisual(action: action, color: color, size: 50),
@@ -46,7 +51,8 @@ class ActionDetailSheet extends StatelessWidget {
 
           const Divider(height: 32),
 
-          // STATS DETALLADOS
+          // 2. STATS DETALLADOS
+          // Se muestran solo si existen (null check)
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: <Widget>[
@@ -72,7 +78,7 @@ class ActionDetailSheet extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // DESCRIPCIÓN
+          // 3. DESCRIPCIÓN
           const Text(
             "DESCRIPCIÓN",
             style: TextStyle(
@@ -87,7 +93,7 @@ class ActionDetailSheet extends StatelessWidget {
             style: const TextStyle(fontSize: 16, height: 1.5),
           ),
 
-          // INFO DAÑO
+          // 4. INFO TIPO DE DAÑO
           if (action.damageType != null) ...<Widget>[
             const SizedBox(height: 24),
             Container(
@@ -114,9 +120,94 @@ class ActionDetailSheet extends StatelessWidget {
               ),
             ),
           ],
+
+          // 5. BOTÓN DE ACCIÓN PRINCIPAL (NUEVO)
+          const SizedBox(height: 40),
+          _buildActionButton(context),
         ],
       ),
     );
+  }
+
+  // --- LÓGICA DEL BOTÓN DE ACCIÓN ---
+
+  Widget _buildActionButton(BuildContext context) {
+    if (action.type == ActionType.feature ||
+        action.type == ActionType.utility) {
+      if (action.diceNotation == null) {
+        return const SizedBox.shrink();
+      }
+    }
+
+    final bool isSpell = action.type == ActionType.spell;
+    final String label = isSpell ? "LANZAR CONJURO" : "REALIZAR ACCIÓN";
+    final IconData icon = isSpell ? Icons.auto_fix_high : Icons.flash_on;
+
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton.icon(
+        style: FilledButton.styleFrom(
+          backgroundColor: color,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        icon: Icon(icon),
+        label: Text(
+          label,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        onPressed: () => _handleAction(context),
+      ),
+    );
+  }
+
+  void _handleAction(BuildContext context) {
+    if (action.type == ActionType.spell) {
+      _castSpell(context);
+    } else {
+      Navigator.pop(context);
+      ScreenEffects.showSlash(context, color);
+      HapticFeedback.heavyImpact();
+    }
+  }
+
+  void _castSpell(BuildContext context) {
+    final CharacterState state = context.read<CharacterBloc>().state;
+    if (state is CharacterLoaded) {
+      try {
+        final Spell spell = state.character.knownSpells.firstWhere(
+          (Spell s) => s.id == action.id,
+        );
+
+        Navigator.pop(context);
+
+        if (spell.level == 0) {
+          ScreenEffects.showMagicBlast(context, color);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("✨ Truco lanzado: ${spell.name}"),
+              backgroundColor: color,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          showModalBottomSheet(
+            context: context,
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            isScrollControlled: true,
+            builder: (_) => CastSpellSheet(
+              spell: spell,
+              bloc: context.read<CharacterBloc>(),
+            ),
+          );
+        }
+      } catch (e) {
+        debugPrint("Error: No se encontró el hechizo original: $e");
+      }
+    }
   }
 }
 

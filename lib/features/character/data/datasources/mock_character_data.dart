@@ -1,11 +1,14 @@
+import 'package:dnd_app/core/constants/attributes.dart';
+import 'package:dnd_app/core/constants/damage_type.dart';
+import 'package:dnd_app/core/constants/skills.dart';
 import 'package:dnd_app/features/inventory/data/repositories/mock_items.dart';
 import 'package:dnd_app/features/inventory/domain/entities/item.dart';
+import 'package:dnd_app/features/spells/domain/data/mock_spells.dart';
+import 'package:dnd_app/features/spells/domain/entities/spell.dart';
 
-import '../../../../core/constants/attributes.dart';
-import '../../../../core/constants/damage_type.dart';
-import '../../../../core/constants/skills.dart';
-// Importamos los items que acabamos de crear
 import '../../domain/entities/character.dart';
+
+// --- PERSONAJE COMPLETO ---
 
 const Character mockAidan = Character(
   id: 'aidan-001',
@@ -25,9 +28,12 @@ const Character mockAidan = Character(
   wisdom: 12,
   charisma: 18,
 
+  // MAGIA (NUEVO)
+  spellcastingAbility: Attribute.charisma, // Carisma es su stat de magia
+
   proficientSaves: <Attribute>[Attribute.dexterity, Attribute.charisma],
 
-  // AQUÍ ESTÁ LA MAGIA: Inyección de dependencias de datos
+  // INVENTARIO (Tus items existentes)
   inventory: <Item>[
     weaponSable,
     weaponDagger,
@@ -36,6 +42,26 @@ const Character mockAidan = Character(
     gearDice,
     weaponScimitar,
   ],
+
+  // HECHIZOS CONOCIDOS (NUEVO)
+  knownSpells: <Spell>[
+    cantripViciousMockery,
+    cantripMinorIllusion,
+    spellHealingWord,
+    spellDissonantWhispers,
+    spellThunderwave,
+    spellInvisibility,
+    spellCloudOfDaggers,
+  ],
+
+  // SLOTS DE MAGIA (Nivel 5: 4 de Nivel 1, 3 de Nivel 2, 2 de Nivel 3)
+  // Simulamos que ha gastado algunos
+  spellSlotsMax: <int, int>{1: 4, 2: 3, 3: 2},
+  spellSlotsCurrent: <int, int>{
+    1: 3, // Gastó 1
+    2: 1, // Gastó 2
+    3: 2, // Llenos
+  },
 
   description:
       "Crecido en el teatro ambulante 'El Espejo de las Estrellas', Aidan aprendió pronto que la vida es una actuación. "

@@ -1,11 +1,11 @@
 import 'package:dnd_app/features/character/domain/entities/character_action.dart';
 import 'package:dnd_app/features/character/presentation/bloc/character_bloc.dart';
+import 'package:dnd_app/features/character/presentation/widgets/action/sheet/action_detail_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-// Importamos nuestros componentes nuevos
 import 'components/action_badges.dart';
-import 'components/action_detail_sheet.dart';
+import 'components/action_quick_button.dart';
 import 'components/action_stats.dart';
 import 'components/action_visual.dart';
 
@@ -28,6 +28,8 @@ class ActionCard extends StatelessWidget {
     };
 
     final bool isFav = action.isFavorite;
+
+    // Estilos de Favorito
     final Color borderColor = isFav
         ? Colors.amber
         : theme.colorScheme.outline.withValues(alpha: 0.1);
@@ -60,12 +62,12 @@ class ActionCard extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             child: Row(
               children: <Widget>[
-                // 1. Componente Visual
+                // 1. VISUAL (Icono grande izquierdo)
                 ActionVisual(action: action, color: accentColor),
 
-                const SizedBox(width: 16),
+                const SizedBox(width: 12),
 
-                // 2. Info Central
+                // 2. INFORMACIÓN CENTRAL
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,13 +83,22 @@ class ActionCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 6),
-
-                      // Usamos Wrap para evitar overflow
                       Wrap(
                         spacing: 6,
                         runSpacing: 4,
                         children: <Widget>[
-                          // Componente Badge (Reutilizable)
+                          if (action.type == ActionType.spell &&
+                              action.spellLevel != null)
+                            ActionBadge(
+                              text: action.spellLevel == 0
+                                  ? "TRUCO"
+                                  : "NVL ${action.spellLevel}",
+                              // Color distintivo para el nivel (un poco más oscuro)
+                              backgroundColor: accentColor.withValues(
+                                alpha: 0.2,
+                              ),
+                              textColor: accentColor,
+                            ),
                           ActionBadge(
                             text: translateActionCost(action.cost),
                             backgroundColor: isDark
@@ -109,10 +120,16 @@ class ActionCard extends StatelessWidget {
                   ),
                 ),
 
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
 
-                // 3. Componente Stats
-                if (action.diceNotation != null || action.toHitModifier != null)
+                // 3. ZONA DE ACCIÓN (Derecha)
+                // Si es accionable (Ataque o Spell) -> Botón Rápido
+                // Si es pasiva con stats -> Stats Block
+                if (action.type == ActionType.attack ||
+                    action.type == ActionType.spell)
+                  ActionQuickButton(action: action, color: accentColor)
+                else if (action.diceNotation != null ||
+                    action.toHitModifier != null)
                   ActionStatBlock(action: action, color: accentColor),
               ],
             ),
@@ -124,7 +141,6 @@ class ActionCard extends StatelessWidget {
 
   void _handleFavoriteToggle(BuildContext context) {
     context.read<CharacterBloc>().add(ToggleFavoriteActionEvent(action.id));
-
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -149,10 +165,8 @@ class ActionCard extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.surface,
       showDragHandle: true,
       builder: (BuildContext ctx) {
-        // Inyectamos el Bloc para que el botón de fav del modal funcione
         return BlocProvider<CharacterBloc>.value(
           value: characterBloc,
-          // Componente Hoja de Detalle
           child: ActionDetailSheet(action: action, color: color),
         );
       },

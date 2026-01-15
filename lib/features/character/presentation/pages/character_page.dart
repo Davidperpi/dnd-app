@@ -14,6 +14,7 @@ class CharacterPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Inyección del BLoC y evento inicial de carga
     return BlocProvider<CharacterBloc>(
       create: (_) => sl<CharacterBloc>()..add(GetCharacterEvent()),
       child: const CharacterView(),
@@ -31,6 +32,7 @@ class CharacterView extends StatelessWidget {
     return DefaultTabController(
       length: 3,
       child: Scaffold(
+        extendBodyBehindAppBar: true,
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 20),
@@ -51,61 +53,61 @@ class CharacterView extends StatelessWidget {
               CharacterError(message: final String msg) => Center(
                 child: Text('Error: $msg'),
               ),
-              CharacterLoaded(character: final Character char) => Column(
-                children: <Widget>[
-                  // 1. CABECERA FIJA
-                  CharacterSummaryHeader(character: char),
-
-                  const SizedBox(height: 20),
-
-                  // 2. TABS
-                  TabBar(
-                    labelColor: theme.colorScheme.secondary,
-                    unselectedLabelColor: theme.colorScheme.onSurface
-                        .withValues(alpha: 0.5),
-                    indicatorColor: theme.colorScheme.secondary,
-                    indicatorSize: TabBarIndicatorSize.label,
-                    dividerColor: Colors.transparent,
-                    labelStyle: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
+              CharacterLoaded(character: final Character char) => Container(
+                color: theme.colorScheme.surface,
+                child: Column(
+                  children: <Widget>[
+                    // Espaciador manual
+                    const SizedBox(height: 20),
+                    // Cabecera
+                    CharacterSummaryHeader(character: char),
+                    const SizedBox(height: 16),
+                    // Tabs
+                    TabBar(
+                      labelColor: theme.colorScheme.secondary,
+                      unselectedLabelColor: theme.colorScheme.onSurface
+                          .withValues(alpha: 0.5),
+                      indicatorColor: theme.colorScheme.secondary,
+                      indicatorSize: TabBarIndicatorSize.label,
+                      dividerColor: Colors.transparent,
+                      labelStyle: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                      tabs: const <Widget>[
+                        Tab(text: 'GENERAL'),
+                        Tab(text: 'ACCIONES'),
+                        Tab(text: 'EQUIPO'),
+                      ],
                     ),
-                    tabs: const <Widget>[
-                      Tab(text: 'GENERAL'),
-                      Tab(text: 'ACCIONES'),
-                      Tab(text: 'EQUIPO'),
-                    ],
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  // 3. CONTENIDO CAMBIANTE
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        // CORREGIDO: Usamos el gris carbón del tema
-                        color: theme.colorScheme.surface,
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(24),
-                          topRight: Radius.circular(24),
+                    const SizedBox(height: 10),
+                    // Pestañas
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surface,
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(24),
+                            topRight: Radius.circular(24),
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: const BorderRadius.only(
+                            topLeft: Radius.circular(24),
+                            topRight: Radius.circular(24),
+                          ),
+                          child: TabBarView(
+                            children: <Widget>[
+                              CharacterStatsTab(character: char),
+                              CharacterActionsTab(character: char),
+                              CharacterInventoryTab(character: char),
+                            ],
+                          ),
                         ),
                       ),
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(24),
-                          topRight: Radius.circular(24),
-                        ),
-                        child: TabBarView(
-                          children: <Widget>[
-                            CharacterStatsTab(character: char),
-                            CharacterActionsTab(character: char),
-                            CharacterInventoryTab(character: char),
-                          ],
-                        ),
-                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
               _ => const SizedBox.shrink(),
             };
