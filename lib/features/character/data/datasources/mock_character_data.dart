@@ -1,6 +1,7 @@
 import 'package:dnd_app/core/constants/attributes.dart';
 import 'package:dnd_app/core/constants/damage_type.dart';
 import 'package:dnd_app/core/constants/skills.dart';
+import 'package:dnd_app/features/character/domain/entities/character_resource.dart';
 import 'package:dnd_app/features/inventory/data/repositories/mock_items.dart';
 import 'package:dnd_app/features/inventory/domain/entities/item.dart';
 import 'package:dnd_app/features/spells/domain/data/mock_spells.dart';
@@ -9,6 +10,8 @@ import 'package:dnd_app/features/spells/domain/entities/spell.dart';
 import '../../domain/entities/character.dart';
 
 // --- PERSONAJE COMPLETO ---
+
+const int _charismaScore = 18;
 
 const Character mockAidan = Character(
   id: 'aidan-001',
@@ -26,7 +29,7 @@ const Character mockAidan = Character(
   constitution: 12,
   intelligence: 10,
   wisdom: 12,
-  charisma: 18,
+  charisma: _charismaScore,
 
   // MAGIA (NUEVO)
   spellcastingAbility: Attribute.charisma, // Carisma es su stat de magia
@@ -41,6 +44,8 @@ const Character mockAidan = Character(
     gearLute,
     gearDice,
     weaponScimitar,
+    potionHealing,
+    potionInvisibility,
   ],
 
   // HECHIZOS CONOCIDOS (NUEVO)
@@ -80,4 +85,13 @@ const Character mockAidan = Character(
   resistances: <DamageType>[DamageType.fire, DamageType.poison],
   immunities: <DamageType>[DamageType.acid],
   vulnerabilities: <DamageType>[DamageType.force],
+  resources: <String, CharacterResource>{
+    'bardic_inspiration': CharacterResource(
+      id: 'bardic_inspiration',
+      name: 'Inspiración Bárdica',
+      max: (_charismaScore - 10) ~/ 2,
+      current: 4,
+      refresh: RefreshRule.shortRest,
+    ),
+  },
 );

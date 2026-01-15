@@ -1,4 +1,6 @@
 import 'package:dnd_app/features/character/domain/entities/character_action.dart';
+// IMPORTANTE: Necesario para diferenciar los tipos de coste (Slot, Item, Feature)
+import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 import 'package:dnd_app/features/character/presentation/bloc/character_bloc.dart';
 import 'package:dnd_app/features/character/presentation/widgets/action/sheet/action_detail_sheet.dart';
 import 'package:flutter/material.dart';
@@ -19,7 +21,7 @@ class ActionCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
 
-    // Colores semánticos
+    // Colores semánticos según el tipo de acción
     final Color accentColor = switch (action.type) {
       ActionType.attack => const Color(0xFFE57373),
       ActionType.spell => const Color(0xFFBA68C8),
@@ -62,12 +64,12 @@ class ActionCard extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             child: Row(
               children: <Widget>[
-                // 1. VISUAL (Icono grande izquierdo)
+                // 1. VISUAL (Icono o Imagen a la izquierda)
                 ActionVisual(action: action, color: accentColor),
 
                 const SizedBox(width: 12),
 
-                // 2. INFORMACIÓN CENTRAL
+                // 2. INFORMACIÓN CENTRAL (Nombre y etiquetas)
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,18 +89,11 @@ class ActionCard extends StatelessWidget {
                         spacing: 6,
                         runSpacing: 4,
                         children: <Widget>[
-                          if (action.type == ActionType.spell &&
-                              action.spellLevel != null)
-                            ActionBadge(
-                              text: action.spellLevel == 0
-                                  ? "TRUCO"
-                                  : "NVL ${action.spellLevel}",
-                              // Color distintivo para el nivel (un poco más oscuro)
-                              backgroundColor: accentColor.withValues(
-                                alpha: 0.2,
-                              ),
-                              textColor: accentColor,
-                            ),
+                          // Badge de Coste (Dinámico: Nivel Magia, Usos Item, etc.)
+                          if (_buildResourceBadge(accentColor) != null)
+                            _buildResourceBadge(accentColor)!,
+
+                          // Badge de Tipo de Acción (Acción, Bonus, Reacción)
                           ActionBadge(
                             text: translateActionCost(action.cost),
                             backgroundColor: isDark
@@ -106,6 +101,8 @@ class ActionCard extends StatelessWidget {
                                 : Colors.grey[200]!,
                             textColor: isDark ? Colors.white70 : Colors.black87,
                           ),
+
+                          // Badge de Tipo de Daño (Fuego, Cortante, etc.)
                           if (action.damageType != null)
                             ActionBadge(
                               text: translateDamageType(action.damageType!),
@@ -123,10 +120,10 @@ class ActionCard extends StatelessWidget {
                 const SizedBox(width: 8),
 
                 // 3. ZONA DE ACCIÓN (Derecha)
-                // Si es accionable (Ataque o Spell) -> Botón Rápido
-                // Si es pasiva con stats -> Stats Block
+                // Ataques y Conjuros tienen botón rápido. El resto muestra stats.
                 if (action.type == ActionType.attack ||
-                    action.type == ActionType.spell)
+                    action.type == ActionType.spell ||
+                    action.resourceCost != null)
                   ActionQuickButton(action: action, color: accentColor)
                 else if (action.diceNotation != null ||
                     action.toHitModifier != null)
@@ -139,8 +136,55 @@ class ActionCard extends StatelessWidget {
     );
   }
 
+  /// Construye la etiqueta de coste basándose en el tipo de recurso (Pattern Matching)
+  Widget? _buildResourceBadge(Color accentColor) {
+    final ResourceCost? cost = action.resourceCost;
+
+    // Si es un item (Consumible), mostramos el stock "x3"
+    if (action.resourceCost is ItemCost && action.remainingUses != null) {
+      return ActionBadge(
+        text: "x${action.remainingUses}",
+        backgroundColor: accentColor.withValues(alpha: 0.2),
+        textColor: accentColor,
+      );
+    }
+
+    // Caso Especial: Trucos (Magia sin coste de recurso)
+    if (action.type == ActionType.spell && cost == null) {
+      return ActionBadge(
+        text: "TRUCO",
+        backgroundColor: accentColor.withValues(alpha: 0.2),
+        textColor: accentColor,
+      );
+    }
+
+    // Si no tiene coste ni es hechizo, no mostramos nada extra
+    if (cost == null) return null;
+
+    // Switch sobre la Sealed Class ResourceCost
+    return switch (cost) {
+      SpellSlotCost(level: final int lvl) => ActionBadge(
+        text: "NVL $lvl",
+        backgroundColor: accentColor.withValues(alpha: 0.2),
+        textColor: accentColor,
+      ),
+      ItemCost(amount: final int amt) => ActionBadge(
+        text: "$amt ${amt > 1 ? 'USOS' : 'USO'}",
+        backgroundColor: accentColor.withValues(alpha: 0.2),
+        textColor: accentColor,
+      ),
+      FeatureResourceCost(amount: final int amt) => ActionBadge(
+        text: "$amt REC.",
+        backgroundColor: accentColor.withValues(alpha: 0.2),
+        textColor: accentColor,
+      ),
+    };
+  }
+
   void _handleFavoriteToggle(BuildContext context) {
     context.read<CharacterBloc>().add(ToggleFavoriteActionEvent(action.id));
+
+    // Feedback visual simple
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -165,6 +209,7 @@ class ActionCard extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.surface,
       showDragHandle: true,
       builder: (BuildContext ctx) {
+        // Re-inyectamos el BLoC porque el BottomSheet crea un nuevo árbol de widgets
         return BlocProvider<CharacterBloc>.value(
           value: characterBloc,
           child: ActionDetailSheet(action: action, color: color),

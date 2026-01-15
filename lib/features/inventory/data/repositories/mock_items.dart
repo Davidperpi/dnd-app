@@ -1,4 +1,5 @@
 import 'package:dnd_app/core/constants/damage_type.dart';
+import 'package:dnd_app/features/inventory/domain/entities/potion.dart';
 
 import '../../../../core/constants/attributes.dart';
 import '../../domain/entities/armor.dart';
@@ -74,6 +75,25 @@ const Gear gearDice = Gear(
   weight: 0.0,
 );
 
+const Potion potionHealing = Potion(
+  id: 'pot_healing',
+  name: 'Poción de Curación',
+  description: 'Un líquido rojo que burbujea. Recuperas 2d4+2 HP.',
+  weight: 0.5,
+  quantity:
+      1, // Cantidad base (se sobrescribe en el inventario del PJ si es necesario, pero como es const, mejor definir la unidad base)
+  diceNotation: '2d4+2',
+);
+
+const Potion potionInvisibility = Potion(
+  id: 'pot_invisibility',
+  name: 'Poción de Invisibilidad',
+  description: 'Te vuelves invisible por 1 hora. El frasco parece vacío.',
+  weight: 0.5,
+  quantity: 1,
+  diceNotation: null, // Sin dados, efecto de estado
+);
+
 // Lista completa para exportar si se necesita
 final List<dynamic> allMockItems = <dynamic>[
   weaponSable,
@@ -81,4 +101,6 @@ final List<dynamic> allMockItems = <dynamic>[
   armorLeather,
   gearLute,
   gearDice,
+  potionHealing,
+  potionInvisibility,
 ];

@@ -26,6 +26,7 @@ class Weapon extends Item {
     this.isEquipped = false,
   }) : super(type: ItemType.weapon);
 
+  @override
   Weapon copyWith({
     String? id,
     String? name,

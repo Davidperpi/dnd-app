@@ -1,8 +1,24 @@
+import 'package:dnd_app/features/character/domain/entities/character.dart';
+import 'package:dnd_app/features/character/domain/entities/character_action.dart';
+// IMPORTANTE: Necesario para distinguir consumibles
+import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 import 'package:dnd_app/features/character/presentation/widgets/action/action_card.dart';
 import 'package:flutter/material.dart';
 
-import '../../domain/entities/character.dart';
-import '../../domain/entities/character_action.dart';
+/// Categorías visuales para el filtro
+enum ActionCategory {
+  all("Todo", Icons.grid_view),
+  favorites("Favoritos", Icons.star), // Integrado como categoría
+  attack("Ataques", Icons.casino),
+  spell("Magia", Icons.auto_fix_high),
+  feature("Rasgos", Icons.flash_on), // Nueva categoría
+  consumable("Objetos", Icons.local_drink), // Nueva categoría
+  utility("Otros", Icons.settings_accessibility);
+
+  final String label;
+  final IconData icon;
+  const ActionCategory(this.label, this.icon);
+}
 
 class CharacterActionsTab extends StatefulWidget {
   final Character character;
@@ -14,111 +30,105 @@ class CharacterActionsTab extends StatefulWidget {
 }
 
 class _CharacterActionsTabState extends State<CharacterActionsTab> {
-  ActionType? _selectedFilter;
-  bool _showOnlyFavorites = false;
+  // Estado del filtro seleccionado (por defecto 'Todo')
+  ActionCategory _selectedCategory = ActionCategory.all;
 
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final List<CharacterAction> allActions = widget.character.actions;
+
+    // --- LÓGICA DE FILTRADO ---
     final List<CharacterAction> filteredActions = allActions.where((
       CharacterAction action,
     ) {
-      if (_showOnlyFavorites && !action.isFavorite) {
-        return false;
-      }
-      if (_selectedFilter == null) {
-        return true;
-      }
-      return action.type == _selectedFilter;
+      return switch (_selectedCategory) {
+        ActionCategory.all => true,
+
+        ActionCategory.favorites => action.isFavorite,
+
+        ActionCategory.attack => action.type == ActionType.attack,
+
+        ActionCategory.spell => action.type == ActionType.spell,
+
+        ActionCategory.feature => action.type == ActionType.feature,
+
+        // Aquí está la magia: Distinguimos objetos por su coste
+        ActionCategory.consumable => action.resourceCost is ItemCost,
+
+        // "Otros" son Utility pero que NO son objetos
+        ActionCategory.utility =>
+          action.type == ActionType.utility && action.resourceCost is! ItemCost,
+      };
     }).toList();
 
     return Column(
       children: <Widget>[
-        // Filtros
+        // 1. Barra de Filtros (Horizontal Scroll)
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
           child: Row(
-            children: <Widget>[
-              // Favoritos
-              FilterChip(
-                label: Icon(
-                  Icons.star,
-                  size: 18,
-                  color: _showOnlyFavorites
-                      ? Colors.amber
-                      : theme.iconTheme.color?.withValues(alpha: 0.5),
-                ),
-                selected: _showOnlyFavorites,
-                showCheckmark: false,
-                selectedColor: Colors.amber.withValues(alpha: 0.2),
-                side: BorderSide.none,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                onSelected: (bool val) {
-                  setState(() {
-                    _showOnlyFavorites = val;
-                    if (val) {
-                      _selectedFilter = null;
+            children: ActionCategory.values.map((ActionCategory category) {
+              final bool isSelected = category == _selectedCategory;
+
+              // Color semántico activo
+              final Color? activeColor = switch (category) {
+                ActionCategory.favorites => Colors.amber,
+                ActionCategory.attack => const Color(0xFFE57373),
+                ActionCategory.spell => const Color(0xFFBA68C8),
+                ActionCategory.feature => const Color(0xFFFFB74D),
+                ActionCategory.consumable => Colors.green[400],
+                _ => theme.colorScheme.primary,
+              };
+
+              return Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: FilterChip(
+                  label: Text(category.label),
+                  avatar: Icon(
+                    category.icon,
+                    size: 16,
+                    // Si está seleccionado blanco, si no, color del tema atenuado
+                    color: isSelected
+                        ? Colors.white
+                        : theme.iconTheme.color?.withValues(alpha: 0.6),
+                  ),
+                  selected: isSelected,
+                  showCheckmark: false,
+                  backgroundColor: theme.cardColor,
+                  selectedColor: activeColor,
+                  labelStyle: TextStyle(
+                    color: isSelected
+                        ? Colors.white
+                        : theme.textTheme.bodyMedium?.color,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
+                  ),
+                  side: isSelected
+                      ? BorderSide.none
+                      : BorderSide(
+                          color: theme.dividerColor.withValues(alpha: 0.5),
+                        ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  onSelected: (bool selected) {
+                    if (selected) {
+                      setState(() => _selectedCategory = category);
                     }
-                  });
-                },
-              ),
-              const SizedBox(width: 8),
-              // Todos
-              _FilterChip(
-                label: 'Todos',
-                isSelected: _selectedFilter == null && !_showOnlyFavorites,
-                onTap: () => setState(() {
-                  _selectedFilter = null;
-                  _showOnlyFavorites = false;
-                }),
-              ),
-              const SizedBox(width: 8),
-              // Ataques
-              _FilterChip(
-                label: 'Ataques',
-                isSelected: _selectedFilter == ActionType.attack,
-                onTap: () =>
-                    setState(() => _selectedFilter = ActionType.attack),
-              ),
-              const SizedBox(width: 8),
-              // Conjuros
-              _FilterChip(
-                label: 'Conjuros',
-                isSelected: _selectedFilter == ActionType.spell,
-                onTap: () => setState(() => _selectedFilter = ActionType.spell),
-              ),
-              const SizedBox(width: 8),
-              // Comunes
-              _FilterChip(
-                label: 'Comunes',
-                isSelected: _selectedFilter == ActionType.utility,
-                onTap: () =>
-                    setState(() => _selectedFilter = ActionType.utility),
-              ),
-            ],
+                  },
+                ),
+              );
+            }).toList(),
           ),
         ),
-        // Tarjetas
+
+        // 2. Lista de Tarjetas
         Expanded(
           child: filteredActions.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.filter_list_off,
-                        size: 48,
-                        color: theme.disabledColor,
-                      ),
-                      const SizedBox(height: 16),
-                      const Text('No hay acciones con este filtro'),
-                    ],
-                  ),
-                )
+              ? _buildEmptyState(theme)
               : ListView.separated(
                   padding: const EdgeInsets.all(16),
                   itemCount: filteredActions.length,
@@ -131,35 +141,20 @@ class _CharacterActionsTabState extends State<CharacterActionsTab> {
       ],
     );
   }
-}
 
-// Widget auxiliar privado para los chips de texto
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _FilterChip({
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    return ActionChip(
-      label: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? theme.colorScheme.onSecondary : null,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        ),
+  Widget _buildEmptyState(ThemeData theme) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Icon(Icons.filter_list_off, size: 48, color: theme.disabledColor),
+          const SizedBox(height: 16),
+          Text(
+            'No hay acciones en esta categoría',
+            style: TextStyle(color: theme.disabledColor),
+          ),
+        ],
       ),
-      backgroundColor: isSelected ? theme.colorScheme.secondary : null,
-      side: BorderSide.none,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-      onPressed: onTap,
     );
   }
 }

@@ -1,5 +1,6 @@
-// ignore_for_file: always_specify_types
-
+import 'package:dnd_app/features/character/data/datasources/character_features_local_data_source.dart';
+import 'package:dnd_app/features/character/domain/entities/character_resource.dart';
+import 'package:dnd_app/features/character/domain/entities/feature_definition.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -16,8 +17,9 @@ class CharacterSummaryHeader extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final String initSign = character.initiative >= 0 ? '+' : '';
 
-    // Detectamos si es un lanzador de conjuros
+    // Detectamos si tiene magia o recursos para mostrar
     final bool hasMagic = character.spellSlotsMax.isNotEmpty;
+    final bool hasResources = character.resources.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -43,13 +45,22 @@ class CharacterSummaryHeader extends StatelessWidget {
             ),
           ),
 
-          // --- NUEVA SECCIÓN: BARRA DE MAGIA COMPACTA ---
-          if (hasMagic) ...<Widget>[
-            const SizedBox(height: 12), // Espacio sutil
-            _buildCompactSpellSlots(context, theme),
-            const SizedBox(height: 12),
-          ] else
-            const SizedBox(height: 20), // Espacio original si no hay magia
+          const SizedBox(height: 12),
+
+          // --- ZONA DE RECURSOS (Magia + Clase) ---
+          // Usamos Wrap para que si hay muchos, bajen de línea
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 8,
+            runSpacing: 8,
+            children: <Widget>[
+              if (hasMagic) _buildCompactSpellSlots(context, theme),
+              if (hasResources) _buildClassResources(context, theme),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
           // 2. ZONA DE COMBATE (AC, Vida, Stats)
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -185,64 +196,107 @@ class CharacterSummaryHeader extends StatelessWidget {
     );
   }
 
-  // --- WIDGETS AUXILIARES DE MAGIA ---
+  // --- WIDGETS AUXILIARES ---
+
   Widget _buildCompactSpellSlots(BuildContext context, ThemeData theme) {
     final List<int> levels = character.spellSlotsMax.keys.toList()..sort();
-
-    const Color magicColor = Color(0xFFBA68C8);
+    const Color magicColor = Color(0xFFBA68C8); // Púrpura
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        color: magicColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: magicColor.withValues(alpha: 0.2)),
+        border: Border.all(color: magicColor.withValues(alpha: 0.3)),
       ),
       child: Wrap(
-        spacing: 12,
+        spacing: 8,
         runSpacing: 6,
-        alignment: WrapAlignment.center,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: levels.map((int level) {
           final int max = character.spellSlotsMax[level] ?? 0;
           final int current = character.spellSlotsCurrent[level] ?? 0;
 
-          return Row(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              // Etiqueta de Nivel más compacta
-              Text(
-                "N$level",
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900, // Extra bold para legibilidad
-                  color: magicColor.withValues(alpha: 0.7),
-                ),
-              ),
-              const SizedBox(width: 4),
-              // Los puntitos
-              ...List.generate(max, (int index) {
-                final bool isAvailable = index < current;
-                return Container(
-                  margin: const EdgeInsets.only(
-                    left: 3,
-                  ), // Un pelín más separado
-                  width: 7, // Ligeramente más pequeños para ganar espacio
-                  height: 7,
-                  decoration: BoxDecoration(
-                    color: isAvailable ? magicColor : Colors.transparent,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: magicColor, width: 1),
-                  ),
-                );
-              }),
-            ],
+          return _buildResourceRow("N$level", max, current, magicColor, theme);
+        }).toList(),
+      ),
+    );
+  }
+
+  // NUEVO: Widget para recursos de clase (Inspiración, Ki, etc.)
+  Widget _buildClassResources(BuildContext context, ThemeData theme) {
+    const Color featureColor = Color(0xFFFFB74D); // Naranja/Dorado
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: featureColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: featureColor.withValues(alpha: 0.3)),
+      ),
+      child: Wrap(
+        spacing: 12,
+        runSpacing: 6,
+        children: character.resources.values.map((CharacterResource resource) {
+          final FeatureDefinition? definition =
+              CharacterFeaturesLocalDataSource.registry[resource.id];
+          // Usamos el nombre corto si es muy largo, o las 3 primeras letras
+          final String label =
+              definition?.shortName ??
+              (resource.name.length > 3
+                  ? resource.name.substring(0, 3).toUpperCase()
+                  : resource.name.toUpperCase());
+
+          return _buildResourceRow(
+            label,
+            resource.max,
+            resource.current,
+            featureColor,
+            theme,
           );
         }).toList(),
       ),
     );
   }
 
+  // Helper genérico para pintar "Etiqueta + Puntitos"
+  Widget _buildResourceRow(
+    String label,
+    int max,
+    int current,
+    Color color,
+    ThemeData theme,
+  ) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: <Widget>[
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.w900,
+            color: color.withValues(alpha: 0.9),
+          ),
+        ),
+        const SizedBox(width: 4),
+        ...List.generate(max, (int index) {
+          final bool isAvailable = index < current;
+          return Container(
+            margin: const EdgeInsets.only(left: 3),
+            width: 7,
+            height: 7,
+            decoration: BoxDecoration(
+              color: isAvailable ? color : Colors.transparent,
+              shape: BoxShape.circle,
+              border: Border.all(color: color, width: 1),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  // ... Resto de métodos (Speed, MiniStat, HpColor, ShowDialog) iguales ...
   String _formatSpeed(int feet) {
     final double meters = (feet / 5) * 1.5;
     if (meters % 1 == 0) {
@@ -276,9 +330,6 @@ class CharacterSummaryHeader extends StatelessWidget {
   }
 
   void _showHealthDialog(BuildContext context, ThemeData theme) {
-    // ... (Tu código existente del diálogo) ...
-    // Solo asegúrate de copiarlo completo del archivo anterior si lo necesitas
-    // o avísame si quieres que te lo vuelva a pegar aquí.
     final TextEditingController controller = TextEditingController();
 
     showDialog(
