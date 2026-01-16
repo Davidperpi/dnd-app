@@ -16,11 +16,11 @@ const int _charismaScore = 18;
 const Character mockAidan = Character(
   id: 'aidan-001',
   name: 'Aidan',
-  race: 'Human',
+  race: 'Humano',
   characterClass: 'Bard (College of Swords)',
   level: 5,
   maxHp: 29,
-  currentHp: 21,
+  currentHp: 29,
   initiative: 3,
 
   // Stats
@@ -31,41 +31,46 @@ const Character mockAidan = Character(
   wisdom: 12,
   charisma: _charismaScore,
 
-  // MAGIA (NUEVO)
-  spellcastingAbility: Attribute.charisma, // Carisma es su stat de magia
+  // MAGIA
+  spellcastingAbility: Attribute.charisma,
 
   proficientSaves: <Attribute>[Attribute.dexterity, Attribute.charisma],
 
-  // INVENTARIO (Tus items existentes)
+  // INVENTARIO
   inventory: <Item>[
     weaponSable,
     weaponDagger,
-    armorLeather,
+    armorStuddedLeather,
+    armorBracersDexSave,
+    armorInheritedRing,
     gearLute,
     gearDice,
-    weaponScimitar,
-    potionHealing,
-    potionInvisibility,
+    weaponSable,
+    weaponDagger,
+    weaponShortbow,
+    gearArrows,
+    gearThievesTools
   ],
 
-  // HECHIZOS CONOCIDOS (NUEVO)
+  // HECHIZOS CONOCIDOS
   knownSpells: <Spell>[
     cantripViciousMockery,
-    cantripMinorIllusion,
-    spellHealingWord,
-    spellDissonantWhispers,
+    cantripFriends,
     spellThunderwave,
-    spellInvisibility,
-    spellCloudOfDaggers,
+    spellFeatherFall,
+    spellHealingWord,
+    spellHoldPerson,
+    spellHeatMetal,
+    spellHypnoticPattern,
+    spellLeomundsTinyHut
   ],
 
   // SLOTS DE MAGIA (Nivel 5: 4 de Nivel 1, 3 de Nivel 2, 2 de Nivel 3)
-  // Simulamos que ha gastado algunos
   spellSlotsMax: <int, int>{1: 4, 2: 3, 3: 2},
   spellSlotsCurrent: <int, int>{
-    1: 3, // Gastó 1
-    2: 1, // Gastó 2
-    3: 2, // Llenos
+    1: 4, 
+    2: 3,
+    3: 2,
   },
 
   description:
@@ -82,15 +87,43 @@ const Character mockAidan = Character(
   hasJackOfAllTrades: true,
   speed: 30,
 
-  resistances: <DamageType>[DamageType.fire, DamageType.poison],
-  immunities: <DamageType>[DamageType.acid],
-  vulnerabilities: <DamageType>[DamageType.force],
+  resistances: <DamageType>[],
+  immunities: <DamageType>[],
+  vulnerabilities: <DamageType>[],
   resources: <String, CharacterResource>{
-    'bardic_inspiration': CharacterResource(
+        'bardic_inspiration': CharacterResource(
       id: 'bardic_inspiration',
-      name: 'Inspiración Bárdica',
+      name: 'Inspiración Bárdica (d8)',
       max: (_charismaScore - 10) ~/ 2,
-      current: 4,
+      current: 4, 
+      refresh: RefreshRule.longRest,
+    ),
+    'defensive_flourish': CharacterResource(
+      id: 'defensive_flourish',
+      name: 'Floritura Defensiva',
+      max: 1,
+      current: 1,
+      refresh: RefreshRule.longRest,
+    ),
+    'slashing_flourish': CharacterResource(
+      id: 'slashing_flourish',
+      name: 'Floritura Ofensiva',
+      max: 1,
+      current: 1,
+      refresh: RefreshRule.longRest,
+    ),
+    'mobile_flourish': CharacterResource(
+      id: 'mobile_flourish',
+      name: 'Floritura Móvil',
+      max: 1,
+      current: 1,
+      refresh: RefreshRule.longRest,
+    ),
+     'song_of_rest': CharacterResource(
+      id: 'song_of_rest',
+      name: 'Canción de Descanso (d6)',
+      max: 1,
+      current: 1,
       refresh: RefreshRule.shortRest,
     ),
   },

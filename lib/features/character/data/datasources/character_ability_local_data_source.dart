@@ -19,6 +19,34 @@ class CharacterAbilityLocalDataSource {
       levelScaling: <int, String>{1: '1d6', 5: '1d8', 10: '1d10', 15: '1d12'},
     ),
 
+    'song_of_rest': const CharacterAbility(
+      id: 'song_of_rest',
+      name: 'Canción de Descanso',
+      description:
+          'Durante un descanso corto, tú y tus aliados recuperáis 1d6 puntos de golpe adicionales si gastáis dados de golpe.',
+      refreshRule: RefreshRule.passive,
+      level: 2,
+      levelScaling: <int, String>{2: '1d6', 9: '1d8', 13: '1d10', 17: '1d12'},
+    ),
+
+    'jack_of_all_trades': const CharacterAbility(
+      id: 'jack_of_all_trades',
+      name: 'Tirado para Todo',
+      description:
+          'Puedes añadir la mitad de tu bonificador de competencia a cualquier prueba de característica en la que no seas competente.',
+      refreshRule: RefreshRule.passive,
+      level: 2,
+    ),
+
+    'expertise': const CharacterAbility(
+      id: 'expertise',
+      name: 'Pericia',
+      description:
+          'Elige dos de tus habilidades competentes. Tu bonificador de competencia se duplica para cualquier prueba de característica que hagas con ellas.',
+      refreshRule: RefreshRule.passive,
+      level: 3,
+    ),
+
     // --- BARDO (Colegio de las Espadas) ---
     'fighting_style_dueling': const CharacterAbility(
       id: 'fighting_style_dueling',
@@ -92,22 +120,5 @@ class CharacterAbilityLocalDataSource {
       level: 6,
     ),
 
-    // --- GUERRERO (Ejemplo futuro) ---
-
-    'second_wind': const CharacterAbility(
-      id: 'second_wind',
-      name: 'Tomar Aliento',
-      description: 'Recuperas 1d10 + Nivel HP.',
-      refreshRule: RefreshRule.shortRest,
-      actionTemplate: CharacterAction(
-        id: 'use_second_wind',
-        name: 'Tomar Aliento',
-        description: 'Recupera puntos de golpe en combate.',
-        type: ActionType.utility,
-        cost: ActionCost.bonusAction,
-        resourceCost: FeatureResourceCost('second_wind'),
-        diceNotation: '1d10',
-      ),
-    ),
   };
 }

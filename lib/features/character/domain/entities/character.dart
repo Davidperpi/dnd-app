@@ -100,8 +100,8 @@ class Character extends Equatable {
     this.spellSlotsMax = const <int, int>{},
     this.spellSlotsCurrent = const <int, int>{},
     this.resources = const <String, CharacterResource>{},
-  }) : assert(currentHp >= 0, 'HP cannot be negative'),
-       assert(maxHp > 0, 'Max HP must be positive');
+  })  : assert(currentHp >= 0, 'HP cannot be negative'),
+        assert(maxHp > 0, 'Max HP must be positive');
 
   // --- Domain Logic (Getters computados) ---
 
@@ -114,13 +114,13 @@ class Character extends Equatable {
   int get proficiencyBonus => 2 + ((level - 1) ~/ 4);
 
   Map<Attribute, int> get abilityScores => <Attribute, int>{
-    Attribute.strength: strength,
-    Attribute.dexterity: dexterity,
-    Attribute.constitution: constitution,
-    Attribute.intelligence: intelligence,
-    Attribute.wisdom: wisdom,
-    Attribute.charisma: charisma,
-  };
+        Attribute.strength: strength,
+        Attribute.dexterity: dexterity,
+        Attribute.constitution: constitution,
+        Attribute.intelligence: intelligence,
+        Attribute.wisdom: wisdom,
+        Attribute.charisma: charisma,
+      };
 
   int getScore(Attribute attribute) => abilityScores[attribute]!;
 
@@ -322,8 +322,8 @@ class Character extends Equatable {
       final CharacterAbility? definition =
           CharacterAbilityLocalDataSource.registry[resourceId];
 
-      if (definition != null) {
-        CharacterAction action = definition.actionTemplate;
+      if (definition != null && definition.actionTemplate != null) {
+        CharacterAction action = definition.actionTemplate!;
 
         // --- LÓGICA DE ESCALADO GENÉRICA ---
         if (definition.levelScaling != null) {
@@ -369,9 +369,8 @@ class Character extends Equatable {
   // Adaptador Spell -> Action
   CharacterAction _mapSpellToAction(Spell spell) {
     final int? hitMod = spell.requiresAttackRoll ? spellAttackBonus : null;
-    final ResourceCost? cost = spell.level > 0
-        ? SpellSlotCost(spell.level)
-        : null;
+    final ResourceCost? cost =
+        spell.level > 0 ? SpellSlotCost(spell.level) : null;
 
     return CharacterAction(
       id: spell.id,
@@ -407,21 +406,25 @@ class Character extends Equatable {
       Skill.athletics => Attribute.strength,
       Skill.acrobatics ||
       Skill.sleightOfHand ||
-      Skill.stealth => Attribute.dexterity,
+      Skill.stealth =>
+        Attribute.dexterity,
       Skill.arcana ||
       Skill.history ||
       Skill.investigation ||
       Skill.nature ||
-      Skill.religion => Attribute.intelligence,
+      Skill.religion =>
+        Attribute.intelligence,
       Skill.animalHandling ||
       Skill.insight ||
       Skill.medicine ||
       Skill.perception ||
-      Skill.survival => Attribute.wisdom,
+      Skill.survival =>
+        Attribute.wisdom,
       Skill.deception ||
       Skill.intimidation ||
       Skill.performance ||
-      Skill.persuasion => Attribute.charisma,
+      Skill.persuasion =>
+        Attribute.charisma,
     };
   }
 
@@ -507,37 +510,37 @@ class Character extends Equatable {
 
   @override
   List<Object?> get props => <Object?>[
-    id,
-    name,
-    race,
-    characterClass,
-    level,
-    maxHp,
-    currentHp,
-    armorClass,
-    initiative,
-    strength,
-    dexterity,
-    constitution,
-    intelligence,
-    wisdom,
-    charisma,
-    spellcastingAbility,
-    proficientSaves,
-    inventory,
-    description,
-    imageUrl,
-    proficientSkills,
-    expertSkills,
-    speed,
-    hasJackOfAllTrades,
-    resistances,
-    immunities,
-    vulnerabilities,
-    favoriteActionIds,
-    knownSpells,
-    spellSlotsMax,
-    spellSlotsCurrent,
-    resources,
-  ];
+        id,
+        name,
+        race,
+        characterClass,
+        level,
+        maxHp,
+        currentHp,
+        armorClass,
+        initiative,
+        strength,
+        dexterity,
+        constitution,
+        intelligence,
+        wisdom,
+        charisma,
+        spellcastingAbility,
+        proficientSaves,
+        inventory,
+        description,
+        imageUrl,
+        proficientSkills,
+        expertSkills,
+        speed,
+        hasJackOfAllTrades,
+        resistances,
+        immunities,
+        vulnerabilities,
+        favoriteActionIds,
+        knownSpells,
+        spellSlotsMax,
+        spellSlotsCurrent,
+        resources,
+      ];
 }

@@ -21,6 +21,7 @@ class Spell {
   final DamageType? damageType;
   final bool requiresSave;
   final bool requiresAttackRoll;
+  final bool isRitual;
 
   const Spell({
     required this.id,
@@ -37,5 +38,6 @@ class Spell {
     this.damageType,
     this.requiresSave = false,
     this.requiresAttackRoll = false,
+    this.isRitual = false
   });
 }
