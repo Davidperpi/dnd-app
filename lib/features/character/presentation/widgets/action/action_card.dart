@@ -1,5 +1,7 @@
+import 'package:dnd_app/features/character/data/datasources/character_ability_local_data_source.dart';
+import 'package:dnd_app/features/character/domain/entities/character.dart';
+import 'package:dnd_app/features/character/domain/entities/character_ability.dart';
 import 'package:dnd_app/features/character/domain/entities/character_action.dart';
-// IMPORTANTE: Necesario para diferenciar los tipos de coste (Slot, Item, Feature)
 import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 import 'package:dnd_app/features/character/presentation/bloc/character_bloc.dart';
 import 'package:dnd_app/features/character/presentation/widgets/action/sheet/action_detail_sheet.dart';
@@ -18,6 +20,12 @@ class ActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final CharacterState state = context.watch<CharacterBloc>().state;
+    if (state is! CharacterLoaded) {
+      return const SizedBox.shrink();
+    }
+
+    final Character character = state.character;
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
 
@@ -28,7 +36,7 @@ class ActionCard extends StatelessWidget {
       ActionType.utility => const Color(0xFF90A4AE),
     };
 
-    final bool isFav = action.isFavorite;
+    final bool isFav = character.favoriteActionIds.contains(action.id);
 
     final Color borderColor = isFav
         ? Colors.amber
@@ -37,6 +45,8 @@ class ActionCard extends StatelessWidget {
     final Color cardColor = isFav
         ? Colors.amber.withValues(alpha: 0.05)
         : theme.colorScheme.surface;
+
+    final Widget? resourceBadge = _buildResourceBadge(accentColor);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -56,7 +66,7 @@ class ActionCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
-          onLongPress: () => _handleFavoriteToggle(context),
+          onLongPress: () => _handleFavoriteToggle(context, isFav),
           onTap: () => _showActionDetails(context, accentColor),
           child: Padding(
             padding: const EdgeInsets.all(12),
@@ -85,8 +95,7 @@ class ActionCard extends StatelessWidget {
                         spacing: 6,
                         runSpacing: 4,
                         children: <Widget>[
-                          if (_buildResourceBadge(accentColor) != null)
-                            _buildResourceBadge(accentColor)!,
+                          if (resourceBadge != null) resourceBadge,
 
                           ActionBadge(
                             text: translateActionCost(action.cost),
@@ -159,26 +168,36 @@ class ActionCard extends StatelessWidget {
         backgroundColor: accentColor.withValues(alpha: 0.2),
         textColor: accentColor,
       ),
-      FeatureResourceCost(amount: final int amt) => ActionBadge(
-        text: "$amt RASGO", // ¡CORREGIDO!
-        backgroundColor: accentColor.withValues(alpha: 0.2), // Restaurado
-        textColor: accentColor,
-      ),
+      FeatureResourceCost(resourceId: final String resId, amount: final int amt) =>
+        () {
+          String label = "RASGO"; // Fallback por defecto
+          final CharacterAbility? abilityDef = CharacterAbilityLocalDataSource.registry[resId];
+
+          if (abilityDef != null && abilityDef.shortName != null && abilityDef.shortName!.isNotEmpty) {
+            label = abilityDef.shortName!;
+          }
+          
+          return ActionBadge(
+            text: "$amt $label",
+            backgroundColor: accentColor.withValues(alpha: 0.2),
+            textColor: accentColor,
+          );
+        }(),
     };
   }
 
-  void _handleFavoriteToggle(BuildContext context) {
+  void _handleFavoriteToggle(BuildContext context, bool isCurrentlyFav) {
     context.read<CharacterBloc>().add(ToggleFavoriteActionEvent(action.id));
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
-          action.isFavorite
+          isCurrentlyFav
               ? 'Eliminado de favoritos'
               : '⭐ Añadido a favoritos',
         ),
-        backgroundColor: action.isFavorite ? null : Colors.amber[700],
+        backgroundColor: isCurrentlyFav ? null : Colors.amber[700],
         duration: const Duration(milliseconds: 600),
         behavior: SnackBarBehavior.floating,
       ),
