@@ -40,14 +40,12 @@ const Character mockAidan = Character(
   inventory: <Item>[
     weaponSable,
     weaponDagger,
+    weaponShortbow,
     armorStuddedLeather,
     armorBracersDexSave,
     armorInheritedRing,
     gearLute,
     gearDice,
-    weaponSable,
-    weaponDagger,
-    weaponShortbow,
     gearArrows,
     gearThievesTools
   ],
@@ -91,11 +89,32 @@ const Character mockAidan = Character(
   immunities: <DamageType>[],
   vulnerabilities: <DamageType>[],
   resources: <String, CharacterResource>{
-        'bardic_inspiration': CharacterResource(
+    'bardic_inspiration': CharacterResource(
       id: 'bardic_inspiration',
       name: 'Inspiración Bárdica (d8)',
       max: (_charismaScore - 10) ~/ 2,
-      current: 4, 
+      current: (_charismaScore - 10) ~/ 2, 
+      refresh: RefreshRule.longRest,
+    ),
+    'defensive_flourish': CharacterResource(
+      id: 'defensive_flourish',
+      name: 'Floritura Defensiva',
+      max: 0,
+      current: 0,
+      refresh: RefreshRule.longRest,
+    ),
+    'slashing_flourish': CharacterResource(
+      id: 'slashing_flourish',
+      name: 'Floritura Ofensiva',
+      max: 0,
+      current: 0,
+      refresh: RefreshRule.longRest,
+    ),
+    'mobile_flourish': CharacterResource(
+      id: 'mobile_flourish',
+      name: 'Floritura Móvil',
+      max: 0,
+      current: 0,
       refresh: RefreshRule.longRest,
     ),
      'song_of_rest': CharacterResource(

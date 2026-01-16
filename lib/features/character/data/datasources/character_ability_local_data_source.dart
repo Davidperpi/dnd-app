@@ -22,6 +22,7 @@ class CharacterAbilityLocalDataSource {
     'song_of_rest': const CharacterAbility(
       id: 'song_of_rest',
       name: 'Canción de Descanso',
+      shortName: 'CD',
       description:
           'Durante un descanso corto, tú y tus aliados recuperáis 1d6 puntos de golpe adicionales si gastáis dados de golpe.',
       refreshRule: RefreshRule.passive,
