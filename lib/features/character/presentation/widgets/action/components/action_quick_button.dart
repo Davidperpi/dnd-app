@@ -21,12 +21,10 @@ class ActionQuickButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Usamos BlocSelector para reconstruir solo si cambia el personaje y de forma segura
     return BlocSelector<CharacterBloc, CharacterState, Character?>(
       selector: (CharacterState state) => state is CharacterLoaded ? state.character : null,
       builder: (BuildContext context, Character? character) {
         if (character == null) {
-          // Muestra el botón deshabilitado si no tenemos datos del personaje
           return _buildButton(context, isAvailable: false, uses: 0);
         }
 
@@ -39,6 +37,10 @@ class ActionQuickButton extends StatelessWidget {
   Widget _buildButton(BuildContext context, {required bool isAvailable, required int uses}) {
     final Color effectiveColor = isAvailable ? color : Theme.of(context).disabledColor;
     final IconData icon = _getActionIcon();
+
+    // Determina si debemos mostrar el contador de usos.
+    // NO se muestra para FeatureResourceCost (IB, Ki, etc.)
+    final bool showUsesCounter = action.resourceCost != null && action.resourceCost is! FeatureResourceCost;
 
     return Material(
       color: Colors.transparent,
@@ -67,8 +69,7 @@ class ActionQuickButton extends StatelessWidget {
                   ),
                 ),
               ],
-              // Mostramos los usos restantes si no es un ataque normal o si está agotado
-              if (action.resourceCost != null) ...<Widget>[
+              if (showUsesCounter) ...<Widget>[
                 const SizedBox(height: 4),
                 Text(
                   "x$uses",
@@ -88,7 +89,7 @@ class ActionQuickButton extends StatelessWidget {
 
   (bool, int) _isActionAvailable(Character character) {
     final ResourceCost? cost = action.resourceCost;
-    if (cost == null) return (true, 99); // Ataques básicos, etc.
+    if (cost == null) return (true, 99);
 
     switch (cost) {
       case FeatureResourceCost(resourceId: final String id, amount: final int amount):
@@ -97,17 +98,15 @@ class ActionQuickButton extends StatelessWidget {
         return (currentUses >= amount, currentUses);
 
       case ItemCost(amount: final int amount):
-        // 'remainingUses' en la acción es la fuente de verdad para consumibles
         final int currentUses = action.remainingUses ?? 0;
         return (currentUses >= amount, currentUses);
 
       case SpellSlotCost(level: final int lvl):
-        if (lvl == 0) return (true, 99); // Trucos
+        if (lvl == 0) return (true, 99);
         final int currentUses = character.spellSlotsCurrent[lvl] ?? 0;
         return (currentUses > 0, currentUses);
     }
   }
-
 
   IconData _getActionIcon() {
     return switch (action.type) {

@@ -126,14 +126,16 @@ const Gear gearThievesTools = Gear(
   description: '',
   weight: 1.0,
   quantity: 3,
+  isConsumable: true
 );
 
 const Gear gearArrows = Gear(
   id: 'gear_arrows_01',
   name: 'Flechas',
-  description: 'Un carcaj con 20 flechas.',
+  description: 'Una flecha',
   weight: 1.0,
   quantity: 20,
+  isConsumable: true
 );
 
 const Gear gearBedroll = Gear(

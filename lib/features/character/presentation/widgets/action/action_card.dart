@@ -168,7 +168,7 @@ class ActionCard extends StatelessWidget {
         backgroundColor: accentColor.withValues(alpha: 0.2),
         textColor: accentColor,
       ),
-      FeatureResourceCost(resourceId: final String resId, amount: final int amt) =>
+      FeatureResourceCost(resourceId: final String resId) =>
         () {
           String label = "RASGO"; // Fallback por defecto
           final CharacterAbility? abilityDef = CharacterAbilityLocalDataSource.registry[resId];
@@ -178,7 +178,7 @@ class ActionCard extends StatelessWidget {
           }
           
           return ActionBadge(
-            text: "$amt $label",
+            text: label,
             backgroundColor: accentColor.withValues(alpha: 0.2),
             textColor: accentColor,
           );
