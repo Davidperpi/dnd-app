@@ -37,9 +37,6 @@ class ActionQuickButton extends StatelessWidget {
   Widget _buildButton(BuildContext context, {required bool isAvailable, required int uses}) {
     final Color effectiveColor = isAvailable ? color : Theme.of(context).disabledColor;
     final IconData icon = _getActionIcon();
-
-    // Determina si debemos mostrar el contador de usos.
-    // NO se muestra para FeatureResourceCost (IB, Ki, etc.)
     final bool showUsesCounter = action.resourceCost != null && action.resourceCost is! FeatureResourceCost;
 
     return Material(
@@ -128,14 +125,12 @@ class ActionQuickButton extends StatelessWidget {
 
   void _handleConsumable(BuildContext context) {
     final ItemCost cost = action.resourceCost as ItemCost;
-    ScreenEffects.showMagicBlast(context, color);
-    context.read<CharacterBloc>().add(ConsumeItemEvent(itemId: cost.itemId));
+    context.read<CharacterBloc>().add(ConsumeItemEvent(itemId: cost.itemId, amount: 1));
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("🧪 Usaste ${action.name}"), backgroundColor: color, duration: const Duration(seconds: 1)));
   }
 
   void _handleFeature(BuildContext context) {
     final FeatureResourceCost cost = action.resourceCost as FeatureResourceCost;
-    ScreenEffects.showMagicBlast(context, color);
     context.read<CharacterBloc>().add(UseFeatureEvent(resourceId: cost.resourceId));
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("⚡ ${action.name} activado"), backgroundColor: color, duration: const Duration(seconds: 1)));
   }

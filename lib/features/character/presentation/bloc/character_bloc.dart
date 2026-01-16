@@ -18,7 +18,6 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
   final GetCharacter getCharacter;
 
   CharacterBloc({required this.getCharacter}) : super(CharacterInitial()) {
-    // 1. Registramos los eventos
     on<GetCharacterEvent>(_onGetCharacter);
     on<UpdateHealthEvent>(_onUpdateHealth);
     on<ToggleEquipItemEvent>(_onToggleEquipItem);
@@ -30,29 +29,6 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     on<PerformLongRestEvent>(_onPerformLongRest);
   }
 
-  // --- MÉTODOS MANEJADORES (HANDLERS) ---
-  void _onCastSpell(CastSpellEvent event, Emitter<CharacterState> emit) {
-    if (state is! CharacterLoaded) return;
-
-    final Character char = (state as CharacterLoaded).character;
-
-    if (event.slotLevel == 0) {
-      return;
-    }
-
-    final int currentSlots = char.spellSlotsCurrent[event.slotLevel] ?? 0;
-    if (currentSlots <= 0) {
-      return;
-    }
-
-    final Map<int, int> newSlots = Map<int, int>.from(char.spellSlotsCurrent);
-    newSlots[event.slotLevel] = currentSlots - 1;
-
-    // 4. Emitir nuevo estado
-    emit(CharacterLoaded(char.copyWith(spellSlotsCurrent: newSlots)));
-  }
-
-  // --- LÓGICA DE CARGA ---
   Future<void> _onGetCharacter(
     GetCharacterEvent event,
     Emitter<CharacterState> emit,
@@ -65,7 +41,6 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     );
   }
 
-  // --- LÓGICA DE VIDA ---
   void _onUpdateHealth(UpdateHealthEvent event, Emitter<CharacterState> emit) {
     if (state is CharacterLoaded) {
       final Character currentChar = (state as CharacterLoaded).character;
@@ -77,7 +52,6 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     }
   }
 
-  // --- LÓGICA DE FAVORITOS ---
   void _onToggleFavoriteAction(
     ToggleFavoriteActionEvent event,
     Emitter<CharacterState> emit,
@@ -103,7 +77,6 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     );
   }
 
-  // --- LÓGICA DE EQUIPAMIENTO ---
   void _onToggleEquipItem(
     ToggleEquipItemEvent event,
     Emitter<CharacterState> emit,
@@ -132,12 +105,24 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
   }
 
   void _onConsumeItem(ConsumeItemEvent event, Emitter<CharacterState> emit) {
-    final CharacterState state = this.state;
-    if (state is CharacterLoaded) {
-      final Character updatedCharacter = state.character.consumeItem(
-        event.itemId,
-      );
-      emit(CharacterLoaded(updatedCharacter));
+    final CharacterState currentState = state;
+    if (currentState is! CharacterLoaded) return;
+
+    final Character currentCharacter = currentState.character;
+    final List<Item> updatedInventory = List<Item>.from(currentCharacter.inventory);
+    final int itemIndex = updatedInventory.indexWhere((item) => item.id == event.itemId);
+
+    if (itemIndex != -1) {
+      final Item itemToConsume = updatedInventory[itemIndex];
+      final int newQuantity = (itemToConsume.quantity) - event.amount;
+
+      if (newQuantity > 0) {
+        updatedInventory[itemIndex] = itemToConsume.copyWith(quantity: newQuantity);
+      } else {
+        updatedInventory.removeAt(itemIndex);
+      }
+
+      emit(CharacterLoaded(currentCharacter.copyWith(inventory: updatedInventory)));
     }
   }
 
@@ -151,13 +136,32 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     }
   }
 
+  void _onCastSpell(CastSpellEvent event, Emitter<CharacterState> emit) {
+    if (state is! CharacterLoaded) return;
+
+    final Character char = (state as CharacterLoaded).character;
+
+    if (event.slotLevel == 0) {
+      return;
+    }
+
+    final int currentSlots = char.spellSlotsCurrent[event.slotLevel] ?? 0;
+    if (currentSlots <= 0) {
+      return;
+    }
+
+    final Map<int, int> newSlots = Map<int, int>.from(char.spellSlotsCurrent);
+    newSlots[event.slotLevel] = currentSlots - 1;
+
+    emit(CharacterLoaded(char.copyWith(spellSlotsCurrent: newSlots)));
+  }
+
   void _onPerformShortRest(
     PerformShortRestEvent event,
     Emitter<CharacterState> emit,
   ) {
     if (state is CharacterLoaded) {
-      final Character updatedChar = (state as CharacterLoaded).character
-          .recoverShortRest();
+      final Character updatedChar = (state as CharacterLoaded).character.recoverShortRest();
       emit(CharacterLoaded(updatedChar));
     }
   }
@@ -167,13 +171,11 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     Emitter<CharacterState> emit,
   ) {
     if (state is CharacterLoaded) {
-      final Character updatedChar = (state as CharacterLoaded).character
-          .recoverLongRest();
+      final Character updatedChar = (state as CharacterLoaded).character.recoverLongRest();
       emit(CharacterLoaded(updatedChar));
     }
   }
 
-  // --- HELPERS PRIVADOS ---
   bool _isItemEquipped(Item item) {
     if (item is Weapon) return item.isEquipped;
     if (item is Armor) return item.isEquipped;

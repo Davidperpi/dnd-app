@@ -199,7 +199,7 @@ class ActionDetailSheet extends StatelessWidget {
   void _handleConsumable(BuildContext context) {
     final ItemCost cost = action.resourceCost as ItemCost;
     ScreenEffects.showMagicBlast(context, color);
-    context.read<CharacterBloc>().add(ConsumeItemEvent(itemId: cost.itemId));
+    context.read<CharacterBloc>().add(ConsumeItemEvent(itemId: cost.itemId, amount: 1));
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("🧪 Usaste ${action.name}"), backgroundColor: color, behavior: SnackBarBehavior.floating));
   }
 

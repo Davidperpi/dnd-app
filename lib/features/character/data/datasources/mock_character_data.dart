@@ -41,6 +41,7 @@ const Character mockAidan = Character(
     weaponSable,
     weaponDagger,
     weaponShortbow,
+    weaponElvenDagger,
     armorStuddedLeather,
     armorBracersDexSave,
     armorInheritedRing,

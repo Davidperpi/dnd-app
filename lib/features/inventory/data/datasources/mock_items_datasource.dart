@@ -29,7 +29,7 @@ const Weapon weaponDagger = Weapon(
   damageType: DamageType.piercing,
   attribute: Attribute.dexterity, // Finesse, arrojadiza
   slot: EquipmentSlot.offHand,
-  isEquipped: false,
+  isEquipped: true,
   isProficient: true,
 );
 
@@ -43,7 +43,7 @@ const Weapon weaponElvenDagger = Weapon(
   damageType: DamageType.piercing,
   attribute: Attribute.dexterity,
   slot: EquipmentSlot.offHand,
-  isEquipped: true,
+  isEquipped: false,
   isProficient: true,
 );
 
@@ -126,7 +126,7 @@ const Gear gearThievesTools = Gear(
   description: '',
   weight: 1.0,
   quantity: 3,
-  isConsumable: true
+  isConsumable: true,
 );
 
 const Gear gearArrows = Gear(
