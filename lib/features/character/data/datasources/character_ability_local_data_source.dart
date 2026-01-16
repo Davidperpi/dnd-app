@@ -3,8 +3,6 @@ import 'package:dnd_app/features/character/domain/entities/character_resource.da
 import 'package:dnd_app/features/character/domain/entities/character_ability.dart';
 import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 
-/// Fuente de datos LOCAL que contiene el "Manual de Reglas" de las Habilidades de Personaje.
-/// Actúa como un registro estático de definiciones.
 class CharacterAbilityLocalDataSource {
   static final Map<String, CharacterAbility>
   registry = <String, CharacterAbility>{
@@ -14,13 +12,13 @@ class CharacterAbilityLocalDataSource {
       name: 'Inspiración Bárdica',
       shortName: 'IB',
       description:
-          'Puedes inspirar a otros como una acción adicional, o usar tus dados de inspiración para potenciar tus Florituras con la Espada.',
+          'Puedes inspirar a otros como una acción adicional (con un dado de {dice}), o usar tus dados de inspiración para potenciar tus Florituras con la Espada.',
       refreshRule: RefreshRule.longRest,
       levelScaling: <int, String>{1: '1d6', 5: '1d8', 10: '1d10', 15: '1d12'},
       actionTemplate: CharacterAction(
         id: 'use_bardic_inspiration',
         name: 'Inspiración Bárdica',
-        description: 'Concedes un dado de Inspiración Bárdica a un aliado que pueda oírte.',
+        description: 'Concedes un dado de Inspiración Bárdica a un aliado que pueda oírte. El aliado puede tirar ese dado y añadir el resultado a una tirada de ataque, prueba de característica o tirada de salvación.',
         type: ActionType.feature,
         cost: ActionCost.bonusAction,
         resourceCost: FeatureResourceCost('bardic_inspiration'),
@@ -33,7 +31,7 @@ class CharacterAbilityLocalDataSource {
       name: 'Canción de Descanso',
       shortName: 'CD',
       description:
-          'Durante un descanso corto, tú y tus aliados recuperáis 1d6 puntos de golpe adicionales si gastáis dados de golpe.',
+          'Durante un descanso corto, tú y tus aliados recuperáis tu dado en puntos de golpe adicionales si gastáis dados de golpe.',
       refreshRule: RefreshRule.passive,
       level: 2,
       levelScaling: <int, String>{2: '1d6', 9: '1d8', 13: '1d10', 17: '1d12'},
@@ -71,15 +69,16 @@ class CharacterAbilityLocalDataSource {
       id: 'defensive_flourish',
       name: 'Floritura Defensiva',
       description:
-          'Puedes gastar un uso de Inspiración Bárdica para añadir el resultado del dado al daño. También sumas ese mismo resultado a tu CA hasta tu próximo turno.',
+          'Al golpear con un ataque, puedes gastar un uso de Inspiración Bárdica para añadir tu dado al daño. También sumas ese mismo resultado a tu CA hasta tu próximo turno.',
       refreshRule: RefreshRule.longRest,
       level: 3,
+      levelScaling: <int, String>{1: '1d6', 5: '1d8', 10: '1d10', 15: '1d12'},
       actionTemplate: CharacterAction(
         id: 'use_defensive_flourish',
         name: 'Floritura Defensiva',
-        description: 'Gasta una IB para añadir daño y CA.',
+        description: 'Al golpear con un ataque, puedes gastar un uso de Inspiración Bárdica para añadir tu dado al daño. También sumas ese mismo resultado a tu CA hasta tu próximo turno.',
         type: ActionType.feature,
-        cost: ActionCost.free, // Se activa al golpear
+        cost: ActionCost.free,
         resourceCost: FeatureResourceCost('bardic_inspiration'),
         imageUrl: 'assets/icons/defensive_flourish.png',
       ),
@@ -87,17 +86,18 @@ class CharacterAbilityLocalDataSource {
 
     'slashing_flourish': const CharacterAbility(
       id: 'slashing_flourish',
-      name: 'Floritura Ofensiva',
+      name: 'Floritura Cortante',
       description:
-          'Puedes gastar un uso de Inspiración Bárdica para añadir el resultado del dado al daño de tu ataque. Además, otras criaturas a 5 pies de ti reciben daño igual al resultado del dado.',
+          'Al golpear con un ataque, puedes gastar un uso de Inspiración Bárdica para añadir tu dado al daño de tu ataque. Además, otras criaturas a 5 pies de ti reciben daño igual al resultado del dado.',
       refreshRule: RefreshRule.longRest,
       level: 3,
+      levelScaling: <int, String>{1: '1d6', 5: '1d8', 10: '1d10', 15: '1d12'},
       actionTemplate: CharacterAction(
         id: 'use_slashing_flourish',
-        name: 'Floritura Ofensiva',
-        description: 'Gasta una IB para hacer daño en área.',
+        name: 'Floritura Cortante',
+        description: 'Al golpear con un ataque, puedes gastar un uso de Inspiración Bárdica para añadir tu dado al daño de tu ataque. Además, otras criaturas a 5 pies de ti reciben daño igual al resultado del dado.',
         type: ActionType.feature,
-        cost: ActionCost.free, // Se activa al golpear
+        cost: ActionCost.free, 
         resourceCost: FeatureResourceCost('bardic_inspiration'),
         imageUrl: 'assets/icons/slashing_flourish.png',
       ),
@@ -107,15 +107,16 @@ class CharacterAbilityLocalDataSource {
       id: 'mobile_flourish',
       name: 'Floritura Móvil',
       description:
-          'Puedes gastar un uso de Inspiración Bárdica para añadir el resultado del dado al daño. Además, puedes empujar al objetivo una distancia igual a 5 + el resultado del dado. Puedes usar tu reacción para moverte a un espacio cercano al objetivo.',
+          'Al golpear con un ataque, puedes gastar un uso de Inspiración Bárdica para añadir tu dado al daño. Además, puedes empujar al objetivo una distancia igual a 5 + el resultado del dado. Puedes usar tu reacción para moverte a un espacio cercano al objetivo.',
       refreshRule: RefreshRule.longRest,
       level: 3,
+      levelScaling: <int, String>{1: '1d6', 5: '1d8', 10: '1d10', 15: '1d12'},
       actionTemplate: CharacterAction(
         id: 'use_mobile_flourish',
         name: 'Floritura Móvil',
-        description: 'Gasta una IB para añadir daño y movilidad.',
+        description: 'Al golpear con un ataque, puedes gastar un uso de Inspiración Bárdica para añadir tu dado al daño. Además, puedes empujar al objetivo una distancia igual a 5 + el resultado del dado. Puedes usar tu reacción para moverte a un espacio cercano al objetivo.',
         type: ActionType.feature,
-        cost: ActionCost.free, // Se activa al golpear
+        cost: ActionCost.free,
         resourceCost: FeatureResourceCost('bardic_inspiration'),
         imageUrl: 'assets/icons/mobile_flourish.png',
       ),
