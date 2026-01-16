@@ -21,7 +21,6 @@ class ActionCard extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final bool isDark = theme.brightness == Brightness.dark;
 
-    // Colores semánticos según el tipo de acción
     final Color accentColor = switch (action.type) {
       ActionType.attack => const Color(0xFFE57373),
       ActionType.spell => const Color(0xFFBA68C8),
@@ -31,7 +30,6 @@ class ActionCard extends StatelessWidget {
 
     final bool isFav = action.isFavorite;
 
-    // Estilos de Favorito
     final Color borderColor = isFav
         ? Colors.amber
         : theme.colorScheme.outline.withValues(alpha: 0.1);
@@ -64,12 +62,10 @@ class ActionCard extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             child: Row(
               children: <Widget>[
-                // 1. VISUAL (Icono o Imagen a la izquierda)
                 ActionVisual(action: action, color: accentColor),
 
                 const SizedBox(width: 12),
 
-                // 2. INFORMACIÓN CENTRAL (Nombre y etiquetas)
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,11 +85,9 @@ class ActionCard extends StatelessWidget {
                         spacing: 6,
                         runSpacing: 4,
                         children: <Widget>[
-                          // Badge de Coste (Dinámico: Nivel Magia, Usos Item, etc.)
                           if (_buildResourceBadge(accentColor) != null)
                             _buildResourceBadge(accentColor)!,
 
-                          // Badge de Tipo de Acción (Acción, Bonus, Reacción)
                           ActionBadge(
                             text: translateActionCost(action.cost),
                             backgroundColor: isDark
@@ -102,7 +96,6 @@ class ActionCard extends StatelessWidget {
                             textColor: isDark ? Colors.white70 : Colors.black87,
                           ),
 
-                          // Badge de Tipo de Daño (Fuego, Cortante, etc.)
                           if (action.damageType != null)
                             ActionBadge(
                               text: translateDamageType(action.damageType!),
@@ -119,8 +112,6 @@ class ActionCard extends StatelessWidget {
 
                 const SizedBox(width: 8),
 
-                // 3. ZONA DE ACCIÓN (Derecha)
-                // Ataques y Conjuros tienen botón rápido. El resto muestra stats.
                 if (action.type == ActionType.attack ||
                     action.type == ActionType.spell ||
                     action.resourceCost != null)
@@ -136,11 +127,9 @@ class ActionCard extends StatelessWidget {
     );
   }
 
-  /// Construye la etiqueta de coste basándose en el tipo de recurso (Pattern Matching)
   Widget? _buildResourceBadge(Color accentColor) {
     final ResourceCost? cost = action.resourceCost;
 
-    // Si es un item (Consumible), mostramos el stock "x3"
     if (action.resourceCost is ItemCost && action.remainingUses != null) {
       return ActionBadge(
         text: "x${action.remainingUses}",
@@ -149,7 +138,6 @@ class ActionCard extends StatelessWidget {
       );
     }
 
-    // Caso Especial: Trucos (Magia sin coste de recurso)
     if (action.type == ActionType.spell && cost == null) {
       return ActionBadge(
         text: "TRUCO",
@@ -158,10 +146,8 @@ class ActionCard extends StatelessWidget {
       );
     }
 
-    // Si no tiene coste ni es hechizo, no mostramos nada extra
     if (cost == null) return null;
 
-    // Switch sobre la Sealed Class ResourceCost
     return switch (cost) {
       SpellSlotCost(level: final int lvl) => ActionBadge(
         text: "NVL $lvl",
@@ -174,8 +160,8 @@ class ActionCard extends StatelessWidget {
         textColor: accentColor,
       ),
       FeatureResourceCost(amount: final int amt) => ActionBadge(
-        text: "$amt REC.",
-        backgroundColor: accentColor.withValues(alpha: 0.2),
+        text: "$amt RASGO", // ¡CORREGIDO!
+        backgroundColor: accentColor.withValues(alpha: 0.2), // Restaurado
         textColor: accentColor,
       ),
     };
@@ -184,7 +170,6 @@ class ActionCard extends StatelessWidget {
   void _handleFavoriteToggle(BuildContext context) {
     context.read<CharacterBloc>().add(ToggleFavoriteActionEvent(action.id));
 
-    // Feedback visual simple
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -209,7 +194,6 @@ class ActionCard extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.surface,
       showDragHandle: true,
       builder: (BuildContext ctx) {
-        // Re-inyectamos el BLoC porque el BottomSheet crea un nuevo árbol de widgets
         return BlocProvider<CharacterBloc>.value(
           value: characterBloc,
           child: ActionDetailSheet(action: action, color: color),
