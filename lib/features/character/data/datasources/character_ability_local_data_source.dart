@@ -17,6 +17,15 @@ class CharacterAbilityLocalDataSource {
           'Puedes inspirar a otros como una acción adicional, o usar tus dados de inspiración para potenciar tus Florituras con la Espada.',
       refreshRule: RefreshRule.longRest, // Actualizado a 2024
       levelScaling: <int, String>{1: '1d6', 5: '1d8', 10: '1d10', 15: '1d12'},
+      actionTemplate: CharacterAction(
+        id: 'use_bardic_inspiration',
+        name: 'Inspirar a un Aliado',
+        description: 'Concedes un dado de Inspiración Bárdica a un aliado que pueda oírte.',
+        type: ActionType.feature,
+        cost: ActionCost.bonusAction,
+        resourceCost: FeatureResourceCost('bardic_inspiration'),
+        imageUrl: 'assets/icons/bardic_inspiration.png',
+      ),
     ),
 
     'song_of_rest': const CharacterAbility(

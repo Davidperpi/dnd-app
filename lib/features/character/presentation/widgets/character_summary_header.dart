@@ -224,7 +224,6 @@ class CharacterSummaryHeader extends StatelessWidget {
     );
   }
 
-  // NUEVO: Widget para recursos de clase (Inspiración, Ki, etc.)
   Widget _buildClassResources(BuildContext context, ThemeData theme) {
     const Color featureColor = Color(0xFFFFB74D); // Naranja/Dorado
 
@@ -238,15 +237,13 @@ class CharacterSummaryHeader extends StatelessWidget {
       child: Wrap(
         spacing: 12,
         runSpacing: 6,
-        children: character.resources.values.map((CharacterResource resource) {
+        children: character.resources.values
+            .where((CharacterResource resource) => resource.max > 0)
+            .map((CharacterResource resource) {
           final CharacterAbility? definition =
               CharacterAbilityLocalDataSource.registry[resource.id];
-          // Usamos el nombre corto si es muy largo, o las 3 primeras letras
           final String label =
-              definition?.shortName ??
-              (resource.name.length > 3
-                  ? resource.name.substring(0, 3).toUpperCase()
-                  : resource.name.toUpperCase());
+              definition?.shortName ?? resource.name.substring(0, 3).toUpperCase();
 
           return _buildResourceRow(
             label,
