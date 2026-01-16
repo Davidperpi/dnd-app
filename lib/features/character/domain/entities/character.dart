@@ -1,15 +1,11 @@
-// features/character/domain/entities/character.dart
-
-// Core Imports
 import 'package:dnd_app/core/constants/attributes.dart';
 import 'package:dnd_app/core/constants/damage_type.dart';
 import 'package:dnd_app/core/constants/skills.dart';
 import 'package:dnd_app/core/constants/standard_actions.dart';
 import 'package:dnd_app/features/character/data/datasources/character_ability_local_data_source.dart';
-// Data Imports (Excepción controlada para Static Registry)
 import 'package:dnd_app/features/character/domain/entities/character_ability.dart';
-// Feature Imports
 import 'package:dnd_app/features/character/domain/entities/character_action.dart';
+import 'package:dnd_app/features/character/domain/entities/character_feature.dart';
 import 'package:dnd_app/features/character/domain/entities/character_resource.dart';
 import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 import 'package:dnd_app/features/inventory/domain/entities/armor.dart';
@@ -24,22 +20,16 @@ class Character extends Equatable {
   final String race;
   final String characterClass;
   final int level;
-
-  // Stats
   final int maxHp;
   final int currentHp;
   final int initiative;
-
-  // Ability Scores
   final int strength;
   final int dexterity;
   final int constitution;
   final int intelligence;
   final int wisdom;
   final int charisma;
-
   final Attribute? spellcastingAbility;
-
   final List<Attribute> proficientSaves;
   final String description;
   final String imageUrl;
@@ -47,27 +37,17 @@ class Character extends Equatable {
   final List<Skill> expertSkills;
   final int speed;
   final bool hasJackOfAllTrades;
-
-  // --- INVENTARIO ---
+  final List<CharacterFeature> features;
   final List<Item> inventory;
-
-  // --- DEFENSAS ---
   final List<DamageType> resistances;
   final List<DamageType> immunities;
   final List<DamageType> vulnerabilities;
-
-  // --- FAVORITOS ---
   final List<String> favoriteActionIds;
-
-  // --- MAGIA ---
   final List<Spell> knownSpells;
   final Map<int, int> spellSlotsMax;
   final Map<int, int> spellSlotsCurrent;
-
-  // --- RECURSOS ---
   final Map<String, CharacterResource> resources;
 
-  // --- Constructor ---
   const Character({
     required this.id,
     required this.name,
@@ -91,6 +71,7 @@ class Character extends Equatable {
     required this.expertSkills,
     required this.speed,
     this.hasJackOfAllTrades = false,
+    this.features = const <CharacterFeature>[],
     this.inventory = const <Item>[],
     this.resistances = const <DamageType>[],
     this.immunities = const <DamageType>[],
@@ -103,13 +84,10 @@ class Character extends Equatable {
   })  : assert(currentHp >= 0, 'HP cannot be negative'),
         assert(maxHp > 0, 'Max HP must be positive');
 
-  // --- Domain Logic (Getters computados) ---
-
   bool get isDead => currentHp == 0;
   bool get isBloodied => currentHp <= (maxHp / 2) && currentHp > 0;
   double get healthPercentage => (currentHp / maxHp).clamp(0.0, 1.0);
 
-  // Helpers de Stats
   int getModifier(int score) => (score - 10) ~/ 2;
   int get proficiencyBonus => 2 + ((level - 1) ~/ 4);
 
@@ -131,82 +109,45 @@ class Character extends Equatable {
     return baseMod + (isProficient ? proficiencyBonus : 0);
   }
 
-  // --- LÓGICA DE NEGOCIO (State Mutation Methods) ---
-
-  /// Consume un recurso de clase (ej. Inspiración, Ki).
-  /// Retorna una nueva instancia de Character.
   Character useResource(String resourceId) {
     if (!resources.containsKey(resourceId)) return this;
 
     final CharacterResource resource = resources[resourceId]!;
     if (resource.current <= 0) return this;
 
-    // Actualizamos el recurso
     final CharacterResource updatedResource = resource.copyWith(
       current: resource.current - 1,
     );
 
-    // Creamos nuevo mapa inmutable
     final Map<String, CharacterResource> newResources = Map.of(resources);
     newResources[resourceId] = updatedResource;
 
     return copyWith(resources: newResources);
   }
 
-  /// Consume una unidad de un item del inventario.
-  /// Retorna una nueva instancia de Character.
-  Character consumeItem(String itemId) {
-    final int index = inventory.indexWhere((Item i) => i.id == itemId);
-    if (index == -1) return this;
-
-    final Item item = inventory[index];
-    if (item.quantity <= 0) return this;
-
-    // Usamos el método abstracto copyWith para actualizar cantidad
-    final Item updatedItem = item.copyWith(quantity: item.quantity - 1);
-
-    // Reconstruimos la lista de inventario
-    final List<Item> newInventory = List.of(inventory);
-    newInventory[index] = updatedItem;
-
-    return copyWith(inventory: newInventory);
-  }
-
-  // --- SISTEMA DE DESCANSO ---
-
-  /// DESCANSAR LARGO (8h):
-  /// - Recupera toda la vida.
-  /// - Recupera todos los Spell Slots.
-  /// - Recupera todos los Recursos (sin importar su regla).
   Character recoverLongRest() {
-    // 1. Recuperar Recursos (Inspiración, etc.)
     final Map<String, CharacterResource> refreshedResources =
         <String, CharacterResource>{};
 
     for (final MapEntry<String, CharacterResource> entry in resources.entries) {
-      // Descanso largo
       refreshedResources[entry.key] = entry.value.copyWith(
         current: entry.value.max,
       );
     }
 
-    // 2. Recuperar Espacios de Conjuro (Reset total)
-    // Copiamos el mapa de Máximos al de Actuales
     final Map<int, int> refreshedSlots = Map.of(spellSlotsMax);
 
     return copyWith(
-      currentHp: maxHp, // Vida a tope
+      currentHp: maxHp,
       spellSlotsCurrent: refreshedSlots,
       resources: refreshedResources,
     );
   }
 
-  // Descanso corto:
   Character recoverShortRest() {
     final Map<String, CharacterResource> refreshedResources = Map.of(resources);
 
     for (final MapEntry<String, CharacterResource> entry in resources.entries) {
-      // Solo recuperamos si la regla es ShortRest
       if (entry.value.refresh == RefreshRule.shortRest) {
         refreshedResources[entry.key] = entry.value.copyWith(
           current: entry.value.max,
@@ -217,7 +158,6 @@ class Character extends Equatable {
     return copyWith(resources: refreshedResources);
   }
 
-  // --- LÓGICA DE ARMADURA (AC) ---
   int get armorClass {
     int baseAC = 10;
     final int dexMod = getModifier(dexterity);
@@ -249,7 +189,6 @@ class Character extends Equatable {
     return baseAC;
   }
 
-  // --- LÓGICA DE INVENTARIO ---
   List<Weapon> get weapons => inventory.whereType<Weapon>().toList();
   List<Weapon> get equippedWeapons =>
       weapons.where((Weapon w) => w.isEquipped).toList();
@@ -260,7 +199,6 @@ class Character extends Equatable {
     return armors.isNotEmpty ? armors.first : null;
   }
 
-  // --- LÓGICA DE COMBATE (FÍSICO) ---
   int getAttackBonus(Weapon weapon) {
     final int mod = getModifier(getScore(weapon.attribute));
     return mod + (weapon.isProficient ? proficiencyBonus : 0);
@@ -270,7 +208,6 @@ class Character extends Equatable {
     return getModifier(getScore(weapon.attribute));
   }
 
-  // --- LÓGICA DE MAGIA (SPELLS) ---
   int get spellAttackBonus {
     if (spellcastingAbility == null) return 0;
     final int score = getScore(spellcastingAbility!);
@@ -283,12 +220,9 @@ class Character extends Equatable {
     return 8 + getModifier(score) + proficiencyBonus;
   }
 
-  // --- LÓGICA DE ACCIONES (Generador Dinámico) ---
-
   List<CharacterAction> get actions {
     final List<CharacterAction> computedActions = <CharacterAction>[];
 
-    // 1. Armas
     for (final Weapon weapon in equippedWeapons) {
       final int hitBonus = getAttackBonus(weapon);
       final int dmgMod = getDamageModifier(weapon);
@@ -311,12 +245,10 @@ class Character extends Equatable {
       );
     }
 
-    // 2. Conjuros
     for (final Spell spell in knownSpells) {
       computedActions.add(_mapSpellToAction(spell));
     }
 
-    // 3. Rasgos de Clase (Features)
     for (final MapEntry<String, CharacterResource> entry in resources.entries) {
       final String resourceId = entry.key;
       final CharacterAbility? definition =
@@ -325,7 +257,6 @@ class Character extends Equatable {
       if (definition != null && definition.actionTemplate != null) {
         CharacterAction action = definition.actionTemplate!;
 
-        // --- LÓGICA DE ESCALADO GENÉRICA ---
         if (definition.levelScaling != null) {
           final List<int> applicableLevels = definition.levelScaling!.keys
               .where((int lvl) => level >= lvl)
@@ -347,18 +278,14 @@ class Character extends Equatable {
         computedActions.add(action);
       }
     }
-    // 4. Consumibles
     for (final Item item in inventory) {
-      // Solo mostramos items consumibles que tengan stock
       if (item.isConsumable && item.quantity > 0) {
         computedActions.add(_mapConsumableToAction(item));
       }
     }
 
-    // 5. Universales
     computedActions.addAll(StandardActions.all);
 
-    // 6. Favoritos
     return computedActions.map((CharacterAction action) {
       final bool isFav = favoriteActionIds.contains(action.id);
       if (action.isFavorite == isFav) return action;
@@ -366,7 +293,6 @@ class Character extends Equatable {
     }).toList();
   }
 
-  // Adaptador Spell -> Action
   CharacterAction _mapSpellToAction(Spell spell) {
     final int? hitMod = spell.requiresAttackRoll ? spellAttackBonus : null;
     final ResourceCost? cost =
@@ -386,7 +312,6 @@ class Character extends Equatable {
     );
   }
 
-  // Adaptador Item -> Action
   CharacterAction _mapConsumableToAction(Item item) {
     return CharacterAction(
       id: 'use_${item.id}',
@@ -400,7 +325,6 @@ class Character extends Equatable {
     );
   }
 
-  // --- Helpers Skills ---
   Attribute getAttributeForSkill(Skill skill) {
     return switch (skill) {
       Skill.athletics => Attribute.strength,
@@ -439,7 +363,6 @@ class Character extends Equatable {
 
   int get passivePerception => 10 + getSkillBonus(Skill.perception);
 
-  // --- CopyWith ---
   Character copyWith({
     String? id,
     String? name,
@@ -463,6 +386,7 @@ class Character extends Equatable {
     List<Skill>? expertSkills,
     int? speed,
     bool? hasJackOfAllTrades,
+    List<CharacterFeature>? features,
     List<Item>? inventory,
     List<DamageType>? resistances,
     List<DamageType>? immunities,
@@ -497,6 +421,7 @@ class Character extends Equatable {
       expertSkills: expertSkills ?? this.expertSkills,
       speed: speed ?? this.speed,
       hasJackOfAllTrades: hasJackOfAllTrades ?? this.hasJackOfAllTrades,
+      features: features ?? this.features,
       resistances: resistances ?? this.resistances,
       immunities: immunities ?? this.immunities,
       vulnerabilities: vulnerabilities ?? this.vulnerabilities,
@@ -534,6 +459,7 @@ class Character extends Equatable {
         expertSkills,
         speed,
         hasJackOfAllTrades,
+        features,
         resistances,
         immunities,
         vulnerabilities,

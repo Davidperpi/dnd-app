@@ -1,6 +1,7 @@
 import 'package:dnd_app/core/constants/attributes.dart';
 import 'package:dnd_app/core/constants/damage_type.dart';
 import 'package:dnd_app/core/constants/skills.dart';
+import 'package:dnd_app/features/character/domain/entities/character_feature.dart';
 import 'package:dnd_app/features/character/domain/entities/character_resource.dart';
 import 'package:dnd_app/features/inventory/data/datasources/mock_items_datasource.dart';
 import 'package:dnd_app/features/inventory/domain/entities/item.dart';
@@ -8,8 +9,6 @@ import 'package:dnd_app/features/spells/data/datasources/mock_spells_datasource.
 import 'package:dnd_app/features/spells/domain/entities/spell.dart';
 
 import '../../domain/entities/character.dart';
-
-// --- PERSONAJE COMPLETO ---
 
 const int _charismaScore = 18;
 
@@ -22,21 +21,14 @@ const Character mockAidan = Character(
   maxHp: 29,
   currentHp: 29,
   initiative: 3,
-
-  // Stats
   strength: 8,
   dexterity: 16,
   constitution: 12,
   intelligence: 10,
   wisdom: 12,
   charisma: _charismaScore,
-
-  // MAGIA
   spellcastingAbility: Attribute.charisma,
-
   proficientSaves: <Attribute>[Attribute.dexterity, Attribute.charisma],
-
-  // INVENTARIO
   inventory: <Item>[
     weaponSable,
     weaponDagger,
@@ -50,8 +42,6 @@ const Character mockAidan = Character(
     gearArrows,
     gearThievesTools
   ],
-
-  // HECHIZOS CONOCIDOS
   knownSpells: <Spell>[
     cantripViciousMockery,
     cantripFriends,
@@ -63,15 +53,12 @@ const Character mockAidan = Character(
     spellHypnoticPattern,
     spellLeomundsTinyHut
   ],
-
-  // SLOTS DE MAGIA (Nivel 5: 4 de Nivel 1, 3 de Nivel 2, 2 de Nivel 3)
   spellSlotsMax: <int, int>{1: 4, 2: 3, 3: 2},
   spellSlotsCurrent: <int, int>{
     1: 4, 
     2: 3,
     3: 2,
   },
-
   description:
       "Crecido en el teatro ambulante 'El Espejo de las Estrellas', Aidan aprendió pronto que la vida es una actuación. "
       "Tras la misteriosa desaparición de su amiga Dafne y la creciente oscuridad de su mentora Selana, huyó llevando consigo "
@@ -80,12 +67,10 @@ const Character mockAidan = Character(
       "Expulsado del Colegio de Bardos por defender su honor ante un noble arrogante, ahora viaja como un alma errante. "
       "Carismático, pragmático y alérgico a las ataduras, busca en Asbravn su próxima gran historia... o su próxima gran apuesta.",
   imageUrl: 'assets/images/aidan_portrait.jpeg',
-
   expertSkills: <Skill>[Skill.acrobatics, Skill.stealth],
   proficientSkills: <Skill>[Skill.survival],
   hasJackOfAllTrades: true,
   speed: 30,
-
   resistances: <DamageType>[],
   immunities: <DamageType>[],
   vulnerabilities: <DamageType>[],
@@ -126,4 +111,9 @@ const Character mockAidan = Character(
       refresh: RefreshRule.shortRest,
     ),
   },
+  features: <CharacterFeature>[
+    CharacterFeature(name: 'Lucha con Dos Armas', description: 'Cuando luchas con dos armas, puedes añadir tu modificador de característica al daño del segundo ataque.'),
+    CharacterFeature(name: 'Pericia', description: 'Eliges dos de tus competencias de habilidad, y tu bonificador de competencia se duplica para cualquier prueba de característica que hagas usando cualquiera de las competencias elegidas.'),
+    CharacterFeature(name: 'Jack of All Trades', description: 'Puedes sumar la mitad de tu bonificador de competencia, redondeado hacia abajo, a cualquier prueba de característica que hagas y que no sume ya tu bonificador de competencia.'),
+  ]
 );

@@ -1,5 +1,6 @@
 import 'package:dnd_app/features/character/presentation/widgets/character_actions_tab.dart';
 import 'package:dnd_app/features/character/presentation/widgets/character_inventory_tab.dart';
+import 'package:dnd_app/features/character/presentation/widgets/general/character_features_list.dart';
 import 'package:dnd_app/features/character/presentation/widgets/rest_menu_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,7 +16,6 @@ class CharacterPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Inyección del BLoC y evento inicial de carga
     return BlocProvider<CharacterBloc>(
       create: (_) => sl<CharacterBloc>()..add(GetCharacterEvent()),
       child: const CharacterView(),
@@ -31,7 +31,7 @@ class CharacterView extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
 
     return DefaultTabController(
-      length: 3,
+      length: 4,
       child: Scaffold(
         extendBodyBehindAppBar: true,
         appBar: AppBar(
@@ -56,12 +56,9 @@ class CharacterView extends StatelessWidget {
                 color: theme.colorScheme.surface,
                 child: Column(
                   children: <Widget>[
-                    // Espaciador manual
                     const SizedBox(height: 20),
-                    // Cabecera
                     CharacterSummaryHeader(character: char),
                     const SizedBox(height: 16),
-                    // Tabs
                     TabBar(
                       labelColor: theme.colorScheme.secondary,
                       unselectedLabelColor: theme.colorScheme.onSurface
@@ -77,10 +74,10 @@ class CharacterView extends StatelessWidget {
                         Tab(text: 'GENERAL'),
                         Tab(text: 'ACCIONES'),
                         Tab(text: 'EQUIPO'),
+                        Tab(text: 'RASGOS'),
                       ],
                     ),
                     const SizedBox(height: 10),
-                    // Pestañas
                     Expanded(
                       child: Container(
                         decoration: BoxDecoration(
@@ -100,6 +97,7 @@ class CharacterView extends StatelessWidget {
                               CharacterStatsTab(character: char),
                               CharacterActionsTab(character: char),
                               CharacterInventoryTab(character: char),
+                              CharacterFeaturesList(features: char.features),
                             ],
                           ),
                         ),
