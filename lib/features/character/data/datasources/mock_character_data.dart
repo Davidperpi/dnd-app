@@ -98,27 +98,6 @@ const Character mockAidan = Character(
       current: 4, 
       refresh: RefreshRule.longRest,
     ),
-    'defensive_flourish': CharacterResource(
-      id: 'defensive_flourish',
-      name: 'Floritura Defensiva',
-      max: 1,
-      current: 1,
-      refresh: RefreshRule.longRest,
-    ),
-    'slashing_flourish': CharacterResource(
-      id: 'slashing_flourish',
-      name: 'Floritura Ofensiva',
-      max: 1,
-      current: 1,
-      refresh: RefreshRule.longRest,
-    ),
-    'mobile_flourish': CharacterResource(
-      id: 'mobile_flourish',
-      name: 'Floritura Móvil',
-      max: 1,
-      current: 1,
-      refresh: RefreshRule.longRest,
-    ),
      'song_of_rest': CharacterResource(
       id: 'song_of_rest',
       name: 'Canción de Descanso (d6)',

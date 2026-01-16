@@ -33,7 +33,7 @@ class CharacterAction extends Equatable {
     this.imageUrl,
     this.isFavorite = false,
     this.resourceCost,
-    this.remainingUses, // <--- Nuevo
+    this.remainingUses,
     this.maxUses,
   });
 
