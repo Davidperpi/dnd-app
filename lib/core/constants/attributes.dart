@@ -1,13 +1,13 @@
 enum Attribute {
-  strength('FUERZA', 'FUE'),
-  dexterity('DESTREZA', 'DES'),
-  constitution('CONSTITUCION', 'CON'),
+  strength('FUERZA', 'STR'),
+  dexterity('DESTREZA', 'DEX'),
+  constitution('CONSTITUCIÓN', 'CON'),
   intelligence('INTELIGENCIA', 'INT'),
-  wisdom('SABIDURIA', 'SAB'),
-  charisma('CARISMA', 'CAR');
+  wisdom('SABIDURÍA', 'WIS'),
+  charisma('CARISMA', 'CHA');
 
-  final String id; // El ID para comparar con la base de datos/mock
-  final String abbr; // La abreviatura para mostrar en pantalla
+  final String label; // The label for display and mapping
+  final String abbr; // The abbreviation for compact display
 
-  const Attribute(this.id, this.abbr);
+  const Attribute(this.label, this.abbr);
 }

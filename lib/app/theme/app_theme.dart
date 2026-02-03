@@ -2,36 +2,40 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // --- PALETA "VOID" (Estilo Moderno/Stitch Dark) ---
+  // --- "VOID" PALETTE (Modern/Stitch Dark Style) ---
 
-  // Primary: El Oro vibrante (Se mantiene igual)
+  // Primary: Vibrant Gold
   static const Color primary = Color(0xFFF4C025);
   static const Color primaryDim = Color(0xFFB58E18);
 
-  // --- NUEVOS FONDOS NEUTROS ---
+  // --- NEUTRAL BACKGROUNDS ---
 
-  // Nivel 1: Fondo Global (Negro Obsidiana - Header)
-  static const Color backgroundBlack = Color(0xFF121212);
+  // Level 1: Global background (Obsidian Black)
+  static const Color globalBackground = Color(0xFF121212);
 
-  // Nivel 2: Fondo Pestañas (Gris Carbón - Body)
-  static const Color backgroundGrey = Color(0xFF181818);
+  // Level 2: Background for tab views (Charcoal Gray)
+  static const Color tabsBackground = Color(0xFF181818);
 
-  // Nivel 3: Tarjetas/Cajas (Gris Acero - Stats)
-  static const Color surfaceCard = Color(0xFF252525);
+  // Level 3: Background for cards and containers (Steel Gray)
+  static const Color cardBackground = Color(0xFF252525);
 
-  // Textos
-  static const Color textHighEmphasis = Color(0xFFE0DACC); // Blanco hueso
-  static const Color textMediumEmphasis = Color(0xFFA8A29E); // Gris cálido
+  // --- UI-SPECIFIC COLORS ---
 
-  // Health
+  // Texts
+  static const Color textHighEmphasis = Color(0xFFE0DACC); // Off-white
+  static const Color textMediumEmphasis = Color(0xFFA8A29E); // Warm gray
+
+  // Health bars
   static const Color healthFill = Color(0xFFDC2626);
+
+  // --- THEME DEFINITION ---
 
   static final ThemeData theme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
 
-    // Aquí definimos el color de fondo principal de la pantalla
-    scaffoldBackgroundColor: backgroundBlack,
+    // Main background color for scaffolds
+    scaffoldBackgroundColor: globalBackground,
 
     fontFamily: GoogleFonts.manrope().fontFamily,
 
@@ -41,14 +45,13 @@ class AppTheme {
       primary: primary,
       secondary: primaryDim,
 
-      // Mapeamos nuestros colores personalizados al esquema estándar
-      surface: backgroundGrey, // El color de las pestañas
-      surfaceContainer: surfaceCard, // El color de las cajitas de stats
-      onSurface: textHighEmphasis,
+      // Map our custom colors to the standard color scheme
+      surface: tabsBackground,       // Used for tab views, bottom nav bars, etc.
+      surfaceContainer: cardBackground, // Used for cards, dialogs, etc.
+      onSurface: textHighEmphasis, // Text color on top of surface colors
       error: healthFill,
     ),
 
-    // Textos (igual que tenías)
     textTheme: TextTheme(
       headlineMedium: GoogleFonts.manrope(
         fontSize: 24,
@@ -59,7 +62,7 @@ class AppTheme {
       titleLarge: GoogleFonts.manrope(
         fontSize: 14,
         fontWeight: FontWeight.w700,
-        color: textHighEmphasis.withValues(alpha: 0.9),
+        color: textHighEmphasis.withOpacity(0.9),
         letterSpacing: 1.2,
       ),
       titleMedium: GoogleFonts.manrope(
@@ -78,7 +81,7 @@ class AppTheme {
 
     iconTheme: const IconThemeData(color: primary),
     dividerTheme: DividerThemeData(
-      color: Colors.white.withValues(alpha: 0.1),
+      color: Colors.white.withOpacity(0.1),
       thickness: 1,
     ),
   );

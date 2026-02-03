@@ -1,4 +1,3 @@
-
 import 'package:dnd_app/features/character/data/datasources/character_ability_local_data_source.dart';
 import 'package:dnd_app/features/character/domain/entities/character_ability.dart';
 import 'package:dnd_app/features/character/domain/entities/character_resource.dart';
@@ -18,7 +17,7 @@ class CharacterSummaryHeader extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final String initSign = character.initiative >= 0 ? '+' : '';
 
-    // Detectamos si tiene magia o recursos para mostrar
+    // Check if the character has magic or resources to display
     final bool hasMagic = character.spellSlotsMax.isNotEmpty;
     final bool hasResources = character.resources.isNotEmpty;
 
@@ -26,7 +25,7 @@ class CharacterSummaryHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Column(
         children: <Widget>[
-          // 1. NOMBRE Y CLASE
+          // 1. NAME AND CLASS
           Text(
             character.name.toUpperCase(),
             style: theme.textTheme.headlineMedium?.copyWith(
@@ -38,7 +37,7 @@ class CharacterSummaryHeader extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '${character.race} ${character.characterClass} - NVL ${character.level}',
+            '${character.race} ${character.characterClass} - NIV ${character.level}',
             style: theme.textTheme.titleMedium?.copyWith(
               color: theme.colorScheme.secondary,
               fontSize: 12,
@@ -48,8 +47,8 @@ class CharacterSummaryHeader extends StatelessWidget {
 
           const SizedBox(height: 12),
 
-          // --- ZONA DE RECURSOS (Magia + Clase) ---
-          // Usamos Wrap para que si hay muchos, bajen de línea
+          // --- RESOURCE ZONE (Magic + Class) ---
+          // We use Wrap so that if there are many, they wrap to the next line
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 8,
@@ -62,11 +61,11 @@ class CharacterSummaryHeader extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // 2. ZONA DE COMBATE (AC, Vida, Stats)
+          // 2. COMBAT ZONE (AC, Health, Stats)
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
-              // --- A. CA (ESCUDO) ---
+              // --- A. AC (SHIELD) ---
               Stack(
                 alignment: Alignment.center,
                 children: <Widget>[
@@ -103,7 +102,7 @@ class CharacterSummaryHeader extends StatelessWidget {
 
               const SizedBox(width: 16),
 
-              // --- B. VIDA + STATS PEQUEÑOS ---
+              // --- B. HEALTH + SMALL STATS ---
               Expanded(
                 child: InkWell(
                   onTap: () => _showHealthDialog(context, theme),
@@ -120,9 +119,7 @@ class CharacterSummaryHeader extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.5,
-                              ),
+                              color: theme.colorScheme.onSurface.withOpacity(0.5),
                             ),
                           ),
 
@@ -146,7 +143,7 @@ class CharacterSummaryHeader extends StatelessWidget {
 
                       const SizedBox(height: 4),
 
-                      // NÚMEROS DE VIDA
+                      // HEALTH NUMBERS
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: <Widget>[
@@ -164,9 +161,7 @@ class CharacterSummaryHeader extends StatelessWidget {
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 14,
-                              color: theme.colorScheme.onSurface.withValues(
-                                alpha: 0.6,
-                              ),
+                              color: theme.colorScheme.onSurface.withOpacity(0.6),
                               height: 1.2,
                             ),
                           ),
@@ -175,15 +170,15 @@ class CharacterSummaryHeader extends StatelessWidget {
 
                       const SizedBox(height: 6),
 
-                      // BARRA DE PROGRESO
+                      // PROGRESS BAR
                       ClipRRect(
                         borderRadius: BorderRadius.circular(4),
                         child: LinearProgressIndicator(
                           value: character.healthPercentage,
                           minHeight: 10,
                           color: _getHpColor(character.healthPercentage),
-                          backgroundColor: theme.colorScheme.onSurface
-                              .withValues(alpha: 0.1),
+                          backgroundColor:
+                              theme.colorScheme.onSurface.withOpacity(0.1),
                         ),
                       ),
                     ],
@@ -197,18 +192,18 @@ class CharacterSummaryHeader extends StatelessWidget {
     );
   }
 
-  // --- WIDGETS AUXILIARES ---
+  // --- HELPER WIDGETS ---
 
   Widget _buildCompactSpellSlots(BuildContext context, ThemeData theme) {
     final List<int> levels = character.spellSlotsMax.keys.toList()..sort();
-    const Color magicColor = Color(0xFFBA68C8); // Púrpura
+    const Color magicColor = Color(0xFFBA68C8); // Purple
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: magicColor.withValues(alpha: 0.1),
+        color: magicColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: magicColor.withValues(alpha: 0.3)),
+        border: Border.all(color: magicColor.withOpacity(0.3)),
       ),
       child: Wrap(
         spacing: 8,
@@ -218,21 +213,21 @@ class CharacterSummaryHeader extends StatelessWidget {
           final int max = character.spellSlotsMax[level] ?? 0;
           final int current = character.spellSlotsCurrent[level] ?? 0;
 
-          return _buildResourceRow("N$level", max, current, magicColor, theme);
+          return _buildResourceRow("L$level", max, current, magicColor, theme);
         }).toList(),
       ),
     );
   }
 
   Widget _buildClassResources(BuildContext context, ThemeData theme) {
-    const Color featureColor = Color(0xFFFFB74D); // Naranja/Dorado
+    const Color featureColor = Color(0xFFFFB74D); // Orange/Gold
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: featureColor.withValues(alpha: 0.1),
+        color: featureColor.withOpacity(0.1),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: featureColor.withValues(alpha: 0.3)),
+        border: Border.all(color: featureColor.withOpacity(0.3)),
       ),
       child: Wrap(
         spacing: 12,
@@ -242,8 +237,8 @@ class CharacterSummaryHeader extends StatelessWidget {
             .map((CharacterResource resource) {
           final CharacterAbility? definition =
               CharacterAbilityLocalDataSource.registry[resource.id];
-          final String label =
-              definition?.shortName ?? resource.name.substring(0, 3).toUpperCase();
+          final String label = definition?.shortName ??
+              resource.name.substring(0, 3).toUpperCase();
 
           return _buildResourceRow(
             label,
@@ -257,7 +252,7 @@ class CharacterSummaryHeader extends StatelessWidget {
     );
   }
 
-  // Helper genérico para pintar "Etiqueta + Puntitos"
+  // Generic helper to paint "Label + Dots"
   Widget _buildResourceRow(
     String label,
     int max,
@@ -273,7 +268,7 @@ class CharacterSummaryHeader extends StatelessWidget {
           style: TextStyle(
             fontSize: 10,
             fontWeight: FontWeight.w900,
-            color: color.withValues(alpha: 0.9),
+            color: color.withOpacity(0.9),
           ),
         ),
         const SizedBox(width: 4),
@@ -294,7 +289,6 @@ class CharacterSummaryHeader extends StatelessWidget {
     );
   }
 
-  // ... Resto de métodos (Speed, MiniStat, HpColor, ShowDialog) iguales ...
   String _formatSpeed(int feet) {
     final double meters = (feet / 5) * 1.5;
     if (meters % 1 == 0) {
@@ -335,7 +329,7 @@ class CharacterSummaryHeader extends StatelessWidget {
       builder: (BuildContext ctx) => AlertDialog(
         backgroundColor: theme.colorScheme.surfaceContainer,
         title: Text(
-          "Modificar Vida",
+          "Modificar Salud",
           style: TextStyle(color: theme.colorScheme.onSurface),
         ),
         content: TextField(
@@ -347,11 +341,11 @@ class CharacterSummaryHeader extends StatelessWidget {
           decoration: InputDecoration(
             hintText: "Cantidad",
             hintStyle: TextStyle(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+              color: theme.colorScheme.onSurface.withOpacity(0.5),
             ),
             enabledBorder: UnderlineInputBorder(
               borderSide: BorderSide(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                color: theme.colorScheme.onSurface.withOpacity(0.3),
               ),
             ),
             focusedBorder: UnderlineInputBorder(
@@ -361,7 +355,7 @@ class CharacterSummaryHeader extends StatelessWidget {
         ),
         actions: <Widget>[
           TextButton.icon(
-            icon: const Icon(Icons.broken_image, color: Colors.redAccent),
+            icon: const Icon(Icons.remove, color: Colors.redAccent),
             label: const Text(
               "DAÑO",
               style: TextStyle(color: Colors.redAccent),
@@ -375,9 +369,9 @@ class CharacterSummaryHeader extends StatelessWidget {
             },
           ),
           TextButton.icon(
-            icon: const Icon(Icons.favorite, color: Colors.greenAccent),
+            icon: const Icon(Icons.add, color: Colors.greenAccent),
             label: const Text(
-              "CURAR",
+              "CURA",
               style: TextStyle(color: Colors.greenAccent),
             ),
             onPressed: () {

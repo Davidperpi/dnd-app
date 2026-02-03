@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'app/theme/app_theme.dart';
 import 'features/character/presentation/pages/character_page.dart';
-import 'injection_container.dart' as di; // Importamos el inyector
+import 'injection_container.dart' as di; // Import the injector
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Necesario para Async
-  await di.init(); // Inicializamos dependencias
+  WidgetsFlutterBinding.ensureInitialized(); // Required for Async
+  await di.init(); // Initialize dependencies
   runApp(const MainApp());
 }
 

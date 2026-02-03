@@ -47,65 +47,65 @@ class CharacterView extends StatelessWidget {
           builder: (BuildContext context, CharacterState state) {
             return switch (state) {
               CharacterLoading() => const Center(
-                child: CircularProgressIndicator(),
-              ),
-              CharacterError(message: final String msg) => Center(
-                child: Text('Error: $msg'),
-              ),
-              CharacterLoaded(character: final Character char) => Container(
-                color: theme.colorScheme.surface,
-                child: Column(
-                  children: <Widget>[
-                    const SizedBox(height: 20),
-                    CharacterSummaryHeader(character: char),
-                    const SizedBox(height: 16),
-                    TabBar(
-                      labelColor: theme.colorScheme.secondary,
-                      unselectedLabelColor: theme.colorScheme.onSurface
-                          .withValues(alpha: 0.5),
-                      indicatorColor: theme.colorScheme.secondary,
-                      indicatorSize: TabBarIndicatorSize.label,
-                      dividerColor: Colors.transparent,
-                      labelStyle: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                      tabs: const <Widget>[
-                        Tab(text: 'GENERAL'),
-                        Tab(text: 'ACCIONES'),
-                        Tab(text: 'EQUIPO'),
-                        Tab(text: 'RASGOS'),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface,
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(24),
-                            topRight: Radius.circular(24),
-                          ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: const BorderRadius.only(
-                            topLeft: Radius.circular(24),
-                            topRight: Radius.circular(24),
-                          ),
-                          child: TabBarView(
-                            children: <Widget>[
-                              CharacterStatsTab(character: char),
-                              CharacterActionsTab(character: char),
-                              CharacterInventoryTab(character: char),
-                              CharacterFeaturesList(features: char.features),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  child: CircularProgressIndicator(),
                 ),
-              ),
+              CharacterError(message: final String msg) => Center(
+                  child: Text('Se ha producido un error: $msg'),
+                ),
+              CharacterLoaded(character: final Character char) => Container(
+                  color: theme.colorScheme.surface,
+                  child: Column(
+                    children: <Widget>[
+                      const SizedBox(height: 20),
+                      CharacterSummaryHeader(character: char),
+                      const SizedBox(height: 16),
+                      TabBar(
+                        labelColor: theme.colorScheme.secondary,
+                        unselectedLabelColor:
+                            theme.colorScheme.onSurface.withOpacity(0.5),
+                        indicatorColor: theme.colorScheme.secondary,
+                        indicatorSize: TabBarIndicatorSize.label,
+                        dividerColor: Colors.transparent,
+                        labelStyle: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        ),
+                        tabs: const <Widget>[
+                          Tab(text: 'ESTADÍSTICAS'),
+                          Tab(text: 'ACCIONES'),
+                          Tab(text: 'INVENTARIO'),
+                          Tab(text: 'RASGOS'),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.surface,
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(24),
+                              topRight: Radius.circular(24),
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.only(
+                              topLeft: Radius.circular(24),
+                              topRight: Radius.circular(24),
+                            ),
+                            child: TabBarView(
+                              children: <Widget>[
+                                CharacterStatsTab(character: char),
+                                CharacterActionsTab(character: char),
+                                CharacterInventoryTab(character: char),
+                                CharacterFeaturesList(features: char.features),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               _ => const SizedBox.shrink(),
             };
           },

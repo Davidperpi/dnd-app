@@ -41,20 +41,23 @@ class CastSpellEvent extends CharacterEvent {
   final int slotLevel;
 
   const CastSpellEvent(this.spell, {required this.slotLevel});
+
+  @override
+  List<Object> get props => <Object>[spell, slotLevel];
 }
 
-/// Evento para consumir un objeto del inventario (Poción, Pergamino)
+/// Event to consume an item from inventory (Potion, Scroll)
 class ConsumeItemEvent extends CharacterEvent {
   final String itemId;
   final int amount;
 
-  const ConsumeItemEvent({required this.itemId, required this.amount});
+  const ConsumeItemEvent({required this.itemId, this.amount = 1});
 
   @override
   List<Object> get props => <Object>[itemId, amount];
 }
 
-/// Evento para gastar un recurso de clase (Inspiración, Ki, Maniobras)
+/// Event to spend a class resource (Inspiration, Ki, Maneuvers)
 class UseFeatureEvent extends CharacterEvent {
   final String resourceId;
 

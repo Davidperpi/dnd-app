@@ -7,7 +7,7 @@ import '../../../inventory/domain/entities/item.dart';
 import '../../../inventory/domain/entities/weapon.dart';
 import '../../domain/entities/character.dart';
 import '../bloc/character_bloc.dart';
-// Imports de nuestros nuevos Widgets divididos
+// Imports for our new divided Widgets
 import 'inventory/inventory_item_card.dart';
 import 'inventory/inventory_modals.dart';
 
@@ -31,21 +31,21 @@ class _CharacterInventoryTabState extends State<CharacterInventoryTab> {
 
     return Column(
       children: <Widget>[
-        // 1. LISTA
+        // 1. LIST
         Expanded(
           child: _currentView == InventoryView.equipped
               ? _buildEquippedList(widget.character)
               : _buildBackpackList(widget.character),
         ),
 
-        // 2. DOCK DE NAVEGACIÓN
+        // 2. NAVIGATION DOCK
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: theme.colorScheme.surfaceContainer,
             boxShadow: <BoxShadow>[
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
+                color: Colors.black.withOpacity(0.3),
                 blurRadius: 10,
                 offset: const Offset(0, -5),
               ),
@@ -74,7 +74,7 @@ class _CharacterInventoryTabState extends State<CharacterInventoryTab> {
                   }),
                   side: WidgetStateProperty.all<BorderSide>(
                     BorderSide(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                      color: theme.colorScheme.primary.withOpacity(0.2),
                     ),
                   ),
                 ),
@@ -112,7 +112,7 @@ class _CharacterInventoryTabState extends State<CharacterInventoryTab> {
     }).toList();
 
     if (equippedItems.isEmpty) {
-      return const Center(child: Text("No llevas nada equipado."));
+      return const Center(child: Text("No tienes nada equipado."));
     }
 
     equippedItems.sort((Item a, Item b) {
@@ -124,7 +124,7 @@ class _CharacterInventoryTabState extends State<CharacterInventoryTab> {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       itemCount: equippedItems.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 8),
+      separatorBuilder: (_, __) => const SizedBox(height: 8),
       itemBuilder: (BuildContext context, int index) {
         final Item item = equippedItems[index];
         return InventoryItemCard(
@@ -132,7 +132,7 @@ class _CharacterInventoryTabState extends State<CharacterInventoryTab> {
           isEquipped: true,
           onTapBody: () => showInventoryItemDetails(context, item),
           onTapAction: () {
-            // Confirmación de desequipar (Importada de modals.dart)
+            // Unequip confirmation (Imported from modals.dart)
             showUnequipConfirmation(context, item, () {
               context.read<CharacterBloc>().add(ToggleEquipItemEvent(item));
             });
@@ -152,8 +152,8 @@ class _CharacterInventoryTabState extends State<CharacterInventoryTab> {
     return ListView.separated(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       itemCount: backpackItems.length,
-      separatorBuilder: (_, _) =>
-          Divider(color: Colors.white.withValues(alpha: 0.05)),
+      separatorBuilder: (_, __) =>
+          Divider(color: Colors.white.withOpacity(0.05)),
       itemBuilder: (BuildContext context, int index) {
         final Item item = backpackItems[index];
         return InventoryItemCard(
@@ -168,7 +168,7 @@ class _CharacterInventoryTabState extends State<CharacterInventoryTab> {
     );
   }
 
-  // --- LÓGICA DE GESTIÓN (Inteligencia del Widget) ---
+  // --- MANAGEMENT LOGIC (Widget Intelligence) ---
 
   void _handleEquipAttempt(BuildContext context, Item newItem) {
     final EquipmentSlot targetSlot = _getItemSlot(newItem);
@@ -178,12 +178,12 @@ class _CharacterInventoryTabState extends State<CharacterInventoryTab> {
     );
 
     if (currentItem != null) {
-      // Conflicto: Mostrar diálogo de sustitución (Importado de modals.dart)
+      // Conflict: Show substitution dialog (Imported from modals.dart)
       showSwapConfirmation(context, newItem, currentItem, () {
         context.read<CharacterBloc>().add(ToggleEquipItemEvent(newItem));
       });
     } else {
-      // Libre: Equipar directo
+      // Free: Equip directly
       context.read<CharacterBloc>().add(ToggleEquipItemEvent(newItem));
     }
   }

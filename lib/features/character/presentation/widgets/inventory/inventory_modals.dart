@@ -91,7 +91,7 @@ void showUnequipConfirmation(
       return AlertDialog(
         backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
         title: Text('¿Desequipar ${item.name}?'),
-        content: const Text('Volverá a tu mochila.'),
+        content: const Text('El objeto volverá a tu mochila.'),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
@@ -196,8 +196,16 @@ String _translateDamageTypeFull(DamageType type) {
     DamageType.slashing => 'Cortante',
     DamageType.piercing => 'Perforante',
     DamageType.bludgeoning => 'Contundente',
+    DamageType.fire => 'Fuego',
+    DamageType.cold => 'Frío',
+    DamageType.lightning => 'Rayo',
+    DamageType.force => 'Fuerza',
+    DamageType.necrotic => 'Necrótico',
+    DamageType.radiant => 'Radiante',
+    DamageType.poison => 'Veneno',
+    DamageType.acid => 'Ácido',
     DamageType.psychic => 'Psíquico',
-    _ => 'Mágico',
+    DamageType.thunder => 'Trueno',
   };
 }
 

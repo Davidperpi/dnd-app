@@ -63,8 +63,8 @@ class CastSpellSheet extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   canCastAtAll
-                      ? "Selecciona el nivel del espacio de conjuro:"
-                      : "No te quedan espacios de conjuro para este hechizo.",
+                      ? "Selecciona el nivel del espacio de conjuro"
+                      : "No te quedan espacios de conjuro para este hechizo",
                   textAlign: TextAlign.center,
                   style: const TextStyle(color: Colors.grey),
                 ),

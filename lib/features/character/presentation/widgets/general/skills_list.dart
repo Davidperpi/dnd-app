@@ -67,19 +67,51 @@ class _SkillsListState extends State<SkillsList> {
           spacing: 8,
           runSpacing: 8,
           children: skillsList.map((Skill skill) {
-            return _SkillChip(skill: skill, character: char);
+            return _SkillChip(
+              skill: skill,
+              character: char,
+              getSkillName: _getSkillName,
+            );
           }).toList(),
         ),
       ],
     );
+  }
+
+  String _getSkillName(Skill skill) {
+    return switch (skill) {
+      Skill.acrobatics => 'ACROBACIAS',
+      Skill.animalHandling => 'TRATO CON ANIMALES',
+      Skill.arcana => 'ARCANO',
+      Skill.athletics => 'ATLETISMO',
+      Skill.deception => 'ENGAÑO',
+      Skill.history => 'HISTORIA',
+      Skill.insight => 'PERSPICACIA',
+      Skill.intimidation => 'INTIMIDACIÓN',
+      Skill.investigation => 'INVESTIGACIÓN',
+      Skill.medicine => 'MEDICINA',
+      Skill.nature => 'NATURALEZA',
+      Skill.perception => 'PERCEPCIÓN',
+      Skill.performance => 'INTERPRETACIÓN',
+      Skill.persuasion => 'PERSUASIÓN',
+      Skill.religion => 'RELIGIÓN',
+      Skill.sleightOfHand => 'JUEGO DE MANOS',
+      Skill.stealth => 'SIGILO',
+      Skill.survival => 'SUPERVIVENCIA',
+    };
   }
 }
 
 class _SkillChip extends StatelessWidget {
   final Skill skill;
   final Character character;
+  final String Function(Skill) getSkillName;
 
-  const _SkillChip({required this.skill, required this.character});
+  const _SkillChip({
+    required this.skill,
+    required this.character,
+    required this.getSkillName,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +181,7 @@ class _SkillChip extends StatelessWidget {
 
           // --- NOMBRE ---
           Text(
-            skill.name.toUpperCase(), // Capitalizado estilo RPG
+            getSkillName(skill), // Usa la función de traducción
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,

@@ -1,18 +1,16 @@
 import 'package:dnd_app/features/character/domain/entities/character.dart';
 import 'package:dnd_app/features/character/domain/entities/character_action.dart';
-// IMPORTANTE: Necesario para distinguir consumibles
 import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 import 'package:dnd_app/features/character/presentation/widgets/action/action_card.dart';
 import 'package:flutter/material.dart';
 
-/// Categorías visuales para el filtro
 enum ActionCategory {
   all("Todo", Icons.grid_view),
-  favorites("Favoritos", Icons.star), // Integrado como categoría
+  favorites("Favoritos", Icons.star),
   attack("Ataques", Icons.casino),
   spell("Magia", Icons.auto_fix_high),
-  feature("Rasgos", Icons.flash_on), // Nueva categoría
-  consumable("Objetos", Icons.local_drink), // Nueva categoría
+  feature("Rasgos", Icons.flash_on),
+  consumable("Objetos", Icons.local_drink),
   utility("Otros", Icons.settings_accessibility);
 
   final String label;
@@ -30,7 +28,6 @@ class CharacterActionsTab extends StatefulWidget {
 }
 
 class _CharacterActionsTabState extends State<CharacterActionsTab> {
-  // Estado del filtro seleccionado (por defecto 'Todo')
   ActionCategory _selectedCategory = ActionCategory.all;
 
   @override
@@ -38,25 +35,16 @@ class _CharacterActionsTabState extends State<CharacterActionsTab> {
     final ThemeData theme = Theme.of(context);
     final List<CharacterAction> allActions = widget.character.actions;
 
-    // --- LÓGICA DE FILTRADO ---
     final List<CharacterAction> filteredActions = allActions.where((
       CharacterAction action,
     ) {
       return switch (_selectedCategory) {
         ActionCategory.all => true,
-
         ActionCategory.favorites => action.isFavorite,
-
         ActionCategory.attack => action.type == ActionType.attack,
-
         ActionCategory.spell => action.type == ActionType.spell,
-
         ActionCategory.feature => action.type == ActionType.feature,
-
-        // Aquí está la magia: Distinguimos objetos por su coste
         ActionCategory.consumable => action.resourceCost is ItemCost,
-
-        // "Otros" son Utility pero que NO son objetos
         ActionCategory.utility =>
           action.type == ActionType.utility && action.resourceCost is! ItemCost,
       };
@@ -64,7 +52,6 @@ class _CharacterActionsTabState extends State<CharacterActionsTab> {
 
     return Column(
       children: <Widget>[
-        // 1. Barra de Filtros (Horizontal Scroll)
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -72,7 +59,6 @@ class _CharacterActionsTabState extends State<CharacterActionsTab> {
             children: ActionCategory.values.map((ActionCategory category) {
               final bool isSelected = category == _selectedCategory;
 
-              // Color semántico activo
               final Color? activeColor = switch (category) {
                 ActionCategory.favorites => Colors.amber,
                 ActionCategory.attack => const Color(0xFFE57373),
@@ -89,10 +75,9 @@ class _CharacterActionsTabState extends State<CharacterActionsTab> {
                   avatar: Icon(
                     category.icon,
                     size: 16,
-                    // Si está seleccionado blanco, si no, color del tema atenuado
                     color: isSelected
                         ? Colors.white
-                        : theme.iconTheme.color?.withValues(alpha: 0.6),
+                        : theme.iconTheme.color?.withOpacity(0.6),
                   ),
                   selected: isSelected,
                   showCheckmark: false,
@@ -109,7 +94,7 @@ class _CharacterActionsTabState extends State<CharacterActionsTab> {
                   side: isSelected
                       ? BorderSide.none
                       : BorderSide(
-                          color: theme.dividerColor.withValues(alpha: 0.5),
+                          color: theme.dividerColor.withOpacity(0.5),
                         ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(20),
@@ -124,8 +109,6 @@ class _CharacterActionsTabState extends State<CharacterActionsTab> {
             }).toList(),
           ),
         ),
-
-        // 2. Lista de Tarjetas
         Expanded(
           child: filteredActions.isEmpty
               ? _buildEmptyState(theme)

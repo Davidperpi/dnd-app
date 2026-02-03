@@ -1,15 +1,15 @@
-/// Define el orden de renderizado en la UI.
-/// El orden en el enum define el orden en la lista.
+/// Defines the rendering order in the UI.
+/// The order in the enum defines the order in the list.
 enum EquipmentSlot {
-  mainHand('Mano Principal'),
-  offHand('Mano Torpe'),
+  mainHand('Mano principal'),
+  offHand('Mano secundaria'),
   armor('Armadura'),
   head('Cabeza'),
-  hands('Guantes'),
+  hands('Manos'),
   feet('Pies'),
   neck('Cuello'),
   ring('Anillos'),
-  other('Otros');
+  other('Otro');
 
   final String label;
   const EquipmentSlot(this.label);

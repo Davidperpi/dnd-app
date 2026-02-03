@@ -1,11 +1,8 @@
-// Import de Core (Solo Attributes, quitamos DamageType para evitar conflictos)
 import 'package:dnd_app/core/constants/attributes.dart';
 import 'package:dnd_app/core/constants/damage_type.dart';
-// Imports de Dominio
 import 'package:dnd_app/features/inventory/domain/entities/armor.dart';
 import 'package:dnd_app/features/inventory/domain/entities/equipment_slot.dart';
 import 'package:dnd_app/features/inventory/domain/entities/item.dart';
-// Quitamos el 'hide' para usar el DamageType que vive dentro de weapon.dart
 import 'package:dnd_app/features/inventory/domain/entities/weapon.dart';
 import 'package:flutter/material.dart';
 
@@ -37,8 +34,8 @@ class InventoryItemCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
           color: isEquipped
-              ? theme.colorScheme.primary.withValues(alpha: 0.3)
-              : Colors.white.withValues(alpha: 0.05),
+              ? theme.colorScheme.primary.withOpacity(0.3)
+              : Colors.white.withOpacity(0.05),
           width: 1,
         ),
       ),
@@ -58,9 +55,7 @@ class InventoryItemCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8),
                   border: isEquipped
                       ? Border.all(
-                          color: theme.colorScheme.primary.withValues(
-                            alpha: 0.3,
-                          ),
+                          color: theme.colorScheme.primary.withOpacity(0.3),
                         )
                       : null,
                 ),
@@ -86,9 +81,7 @@ class InventoryItemCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w900,
-                            color: theme.colorScheme.primary.withValues(
-                              alpha: 0.8,
-                            ),
+                            color: theme.colorScheme.primary.withOpacity(0.8),
                             letterSpacing: 1.0,
                           ),
                         ),
@@ -101,9 +94,7 @@ class InventoryItemCard extends StatelessWidget {
                         fontSize: 15,
                         color: isEquipped
                             ? null
-                            : theme.colorScheme.onSurface.withValues(
-                                alpha: 0.9,
-                              ),
+                            : theme.colorScheme.onSurface.withOpacity(0.9),
                       ),
                     ),
 
@@ -135,10 +126,10 @@ class InventoryItemCard extends StatelessWidget {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                      color: theme.colorScheme.primary.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(6),
                       border: Border.all(
-                        color: theme.colorScheme.primary.withValues(alpha: 0.5),
+                        color: theme.colorScheme.primary.withOpacity(0.5),
                       ),
                     ),
                     child: Text(
@@ -175,7 +166,7 @@ class InventoryItemCard extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
           fontSize: 12,
         ),
       );
@@ -264,17 +255,17 @@ class InventoryItemCard extends StatelessWidget {
         color ??
         (isHighlight
             ? theme.colorScheme.primary
-            : theme.colorScheme.onSurface.withValues(alpha: 0.7));
+            : theme.colorScheme.onSurface.withOpacity(0.7));
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
       decoration: BoxDecoration(
         color: isHighlight
-            ? theme.colorScheme.primary.withValues(alpha: 0.1)
-            : Colors.white.withValues(alpha: 0.05),
+            ? theme.colorScheme.primary.withOpacity(0.1)
+            : Colors.white.withOpacity(0.05),
         borderRadius: BorderRadius.circular(4),
         border: isHighlight
-            ? Border.all(color: contentColor.withValues(alpha: 0.3))
+            ? Border.all(color: contentColor.withOpacity(0.3))
             : null,
       ),
       child: Row(
@@ -304,7 +295,15 @@ class InventoryItemCard extends StatelessWidget {
       DamageType.piercing => 'PER',
       DamageType.bludgeoning => 'CON',
       DamageType.psychic => 'PSI',
-      _ => 'Mágico',
+      DamageType.acid => 'ACD',
+      DamageType.cold => 'FRO',
+      DamageType.fire => 'FGO',
+      DamageType.force => 'FRZ',
+      DamageType.lightning => 'RAY',
+      DamageType.necrotic => 'NEC',
+      DamageType.poison => 'VEN',
+      DamageType.radiant => 'RAD',
+      DamageType.thunder => 'TRU',
     };
   }
 

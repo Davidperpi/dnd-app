@@ -6,19 +6,19 @@ import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 class CharacterAbilityLocalDataSource {
   static final Map<String, CharacterAbility>
   registry = <String, CharacterAbility>{
-    // --- HABILIDADES GENERALES DE BARDO ---
+    // --- BARD GENERAL ABILITIES ---
     'bardic_inspiration': const CharacterAbility(
       id: 'bardic_inspiration',
-      name: 'Inspiración Bárdica',
-      shortName: 'IB',
+      name: 'Bardic Inspiration',
+      shortName: 'BI',
       description:
-          'Puedes inspirar a otros como una acción adicional (con un dado de {dice}), o usar tus dados de inspiración para potenciar tus Florituras con la Espada.',
+          'You can inspire others as a bonus action (with a [dice] die), or use your inspiration dice to empower your Blade Flourishes.',
       refreshRule: RefreshRule.longRest,
       levelScaling: <int, String>{1: '1d6', 5: '1d8', 10: '1d10', 15: '1d12'},
       actionTemplate: CharacterAction(
         id: 'use_bardic_inspiration',
-        name: 'Inspiración Bárdica',
-        description: 'Concedes un dado de Inspiración Bárdica a un aliado que pueda oírte. El aliado puede tirar ese dado y añadir el resultado a una tirada de ataque, prueba de característica o tirada de salvación.',
+        name: 'Bardic Inspiration',
+        description: 'You grant a Bardic Inspiration die to an ally who can hear you. The ally can roll that die and add the result to an attack roll, ability check, or saving throw.',
         type: ActionType.feature,
         cost: ActionCost.bonusAction,
         resourceCost: FeatureResourceCost('bardic_inspiration'),
@@ -28,10 +28,10 @@ class CharacterAbilityLocalDataSource {
 
     'song_of_rest': const CharacterAbility(
       id: 'song_of_rest',
-      name: 'Canción de Descanso',
-      shortName: 'CD',
+      name: 'Song of Rest',
+      shortName: 'SR',
       description:
-          'Durante un descanso corto, tú y tus aliados recuperáis tu dado en puntos de golpe adicionales si gastáis dados de golpe.',
+          'During a short rest, you and your allies regain additional hit points equal to your die roll if you spend any Hit Dice.',
       refreshRule: RefreshRule.passive,
       level: 2,
       levelScaling: <int, String>{2: '1d6', 9: '1d8', 13: '1d10', 17: '1d12'},
@@ -39,44 +39,44 @@ class CharacterAbilityLocalDataSource {
 
     'jack_of_all_trades': const CharacterAbility(
       id: 'jack_of_all_trades',
-      name: 'Tirado para Todo',
+      name: 'Jack of All Trades',
       description:
-          'Puedes añadir la mitad de tu bonificador de competencia a cualquier prueba de característica en la que no seas competente.',
+          'You can add half of your proficiency bonus to any ability check you make that does not already include your proficiency bonus.',
       refreshRule: RefreshRule.passive,
       level: 2,
     ),
 
     'expertise': const CharacterAbility(
       id: 'expertise',
-      name: 'Pericia',
+      name: 'Expertise',
       description:
-          'Elige dos de tus habilidades competentes. Tu bonificador de competencia se duplica para cualquier prueba de característica que hagas con ellas.',
+          'Choose two of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.',
       refreshRule: RefreshRule.passive,
       level: 3,
     ),
 
-    // --- BARDO (Colegio de las Espadas) ---
+    // --- BARD (College of Swords) ---
     'fighting_style_dueling': const CharacterAbility(
       id: 'fighting_style_dueling',
-      name: 'Estilo de Combate: Duelo',
+      name: 'Fighting Style: Dueling',
       description:
-          'Cuando llevas un arma cuerpo a cuerpo en una mano y ninguna otra arma, ganas un +2 a las tiradas de daño con esa arma.',
+          'When you are wielding a melee weapon in one hand and no other weapons, you gain a +2 bonus to damage rolls with that weapon.',
       refreshRule: RefreshRule.passive,
       level: 3,
     ),
 
     'defensive_flourish': const CharacterAbility(
       id: 'defensive_flourish',
-      name: 'Floritura Defensiva',
+      name: 'Defensive Flourish',
       description:
-          'Al golpear con un ataque, puedes gastar un uso de Inspiración Bárdica para añadir tu dado al daño. También sumas ese mismo resultado a tu CA hasta tu próximo turno.',
+          'When you hit with an attack, you can expend one use of Bardic Inspiration to add the die to the damage. You also add the number rolled to your AC until your next turn.',
       refreshRule: RefreshRule.longRest,
       level: 3,
       levelScaling: <int, String>{1: '1d6', 5: '1d8', 10: '1d10', 15: '1d12'},
       actionTemplate: CharacterAction(
         id: 'use_defensive_flourish',
-        name: 'Floritura Defensiva',
-        description: 'Al golpear con un ataque, puedes gastar un uso de Inspiración Bárdica para añadir tu dado al daño. También sumas ese mismo resultado a tu CA hasta tu próximo turno.',
+        name: 'Defensive Flourish',
+        description: 'When you hit with an attack, you can expend one use of Bardic Inspiration to add the die to the damage. You also add the number rolled to your AC until your next turn.',
         type: ActionType.feature,
         cost: ActionCost.free,
         resourceCost: FeatureResourceCost('bardic_inspiration'),
@@ -86,16 +86,16 @@ class CharacterAbilityLocalDataSource {
 
     'slashing_flourish': const CharacterAbility(
       id: 'slashing_flourish',
-      name: 'Floritura Cortante',
+      name: 'Slashing Flourish',
       description:
-          'Al golpear con un ataque, puedes gastar un uso de Inspiración Bárdica para añadir tu dado al daño de tu ataque. Además, otras criaturas a 5 pies de ti reciben daño igual al resultado del dado.',
+          'When you hit with an attack, you can expend one use of Bardic Inspiration to add the die to your attacks damage. In addition, other creatures within 5 feet of you take damage equal to the number rolled on the die.',
       refreshRule: RefreshRule.longRest,
       level: 3,
       levelScaling: <int, String>{1: '1d6', 5: '1d8', 10: '1d10', 15: '1d12'},
       actionTemplate: CharacterAction(
         id: 'use_slashing_flourish',
-        name: 'Floritura Cortante',
-        description: 'Al golpear con un ataque, puedes gastar un uso de Inspiración Bárdica para añadir tu dado al daño de tu ataque. Además, otras criaturas a 5 pies de ti reciben daño igual al resultado del dado.',
+        name: 'Slashing Flourish',
+        description: 'When you hit with an attack, you can expend one use of Bardic Inspiration to add the die to your attacks damage. In addition, other creatures within 5 feet of you take damage equal to the number rolled on the die.',
         type: ActionType.feature,
         cost: ActionCost.free, 
         resourceCost: FeatureResourceCost('bardic_inspiration'),
@@ -105,16 +105,16 @@ class CharacterAbilityLocalDataSource {
 
     'mobile_flourish': const CharacterAbility(
       id: 'mobile_flourish',
-      name: 'Floritura Móvil',
+      name: 'Mobile Flourish',
       description:
-          'Al golpear con un ataque, puedes gastar un uso de Inspiración Bárdica para añadir tu dado al daño. Además, puedes empujar al objetivo una distancia igual a 5 + el resultado del dado. Puedes usar tu reacción para moverte a un espacio cercano al objetivo.',
+          'When you hit with an attack, you can expend one use of Bardic Inspiration to add the die to the damage. In addition, you can push the target a distance equal to 5 + the number rolled on the die. You can use your reaction to move to a space adjacent to the target.',
       refreshRule: RefreshRule.longRest,
       level: 3,
       levelScaling: <int, String>{1: '1d6', 5: '1d8', 10: '1d10', 15: '1d12'},
       actionTemplate: CharacterAction(
         id: 'use_mobile_flourish',
-        name: 'Floritura Móvil',
-        description: 'Al golpear con un ataque, puedes gastar un uso de Inspiración Bárdica para añadir tu dado al daño. Además, puedes empujar al objetivo una distancia igual a 5 + el resultado del dado. Puedes usar tu reacción para moverte a un espacio cercano al objetivo.',
+        name: 'Mobile Flourish',
+        description: 'When you hit with an attack, you can expend one use of Bardic Inspiration to add the die to the damage. In addition, you can push the target a distance equal to 5 + the number rolled on the die. You can use your reaction to move to a space adjacent to the target.',
         type: ActionType.feature,
         cost: ActionCost.free,
         resourceCost: FeatureResourceCost('bardic_inspiration'),
@@ -124,9 +124,9 @@ class CharacterAbilityLocalDataSource {
     
     'extra_attack': const CharacterAbility(
       id: 'extra_attack',
-      name: 'Ataque Extra',
+      name: 'Extra Attack',
       description:
-          'Puedes atacar dos veces, en lugar de una, siempre que realices la acción de Ataque en tu turno.',
+          'You can attack twice, instead of once, whenever you take the Attack action on your turn.',
       refreshRule: RefreshRule.passive,
       level: 6,
     ),

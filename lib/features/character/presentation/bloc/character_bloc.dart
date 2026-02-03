@@ -29,6 +29,19 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
     on<PerformLongRestEvent>(_onPerformLongRest);
   }
 
+  /// A helper method to execute a character update function if the state is [CharacterLoaded].
+  /// This reduces boilerplate code in event handlers.
+  void _emitLoadedIfPossible(
+    Emitter<CharacterState> emit,
+    Character Function(Character character) update,
+  ) {
+    final currentState = state;
+    if (currentState is CharacterLoaded) {
+      final newCharacter = update(currentState.character);
+      emit(CharacterLoaded(newCharacter));
+    }
+  }
+
   Future<void> _onGetCharacter(
     GetCharacterEvent event,
     Emitter<CharacterState> emit,
@@ -42,140 +55,122 @@ class CharacterBloc extends Bloc<CharacterEvent, CharacterState> {
   }
 
   void _onUpdateHealth(UpdateHealthEvent event, Emitter<CharacterState> emit) {
-    if (state is CharacterLoaded) {
-      final Character currentChar = (state as CharacterLoaded).character;
-      int newHp = currentChar.currentHp + event.amount;
-      if (newHp < 0) newHp = 0;
-      if (newHp > currentChar.maxHp) newHp = currentChar.maxHp;
-
-      emit(CharacterLoaded(currentChar.copyWith(currentHp: newHp)));
-    }
+    _emitLoadedIfPossible(emit, (character) {
+      final newHp = (character.currentHp + event.amount).clamp(0, character.maxHp);
+      return character.copyWith(currentHp: newHp);
+    });
   }
 
   void _onToggleFavoriteAction(
     ToggleFavoriteActionEvent event,
     Emitter<CharacterState> emit,
   ) {
-    final CharacterState currentState = state;
-    if (currentState is! CharacterLoaded) return;
-    final Character currentCharacter = currentState.character;
-
-    final List<String> currentFavs = List<String>.from(
-      currentCharacter.favoriteActionIds,
-    );
-
-    if (currentFavs.contains(event.actionId)) {
-      currentFavs.remove(event.actionId);
-    } else {
-      currentFavs.add(event.actionId);
-    }
-
-    emit(
-      CharacterLoaded(
-        currentCharacter.copyWith(favoriteActionIds: currentFavs),
-      ),
-    );
+    _emitLoadedIfPossible(emit, (character) {
+      final newFavs = List<String>.from(character.favoriteActionIds);
+      if (newFavs.contains(event.actionId)) {
+        newFavs.remove(event.actionId);
+      } else {
+        newFavs.add(event.actionId);
+      }
+      return character.copyWith(favoriteActionIds: newFavs);
+    });
   }
 
   void _onToggleEquipItem(
     ToggleEquipItemEvent event,
     Emitter<CharacterState> emit,
   ) {
-    final CharacterState currentState = state;
-    if (currentState is! CharacterLoaded) return;
+    _emitLoadedIfPossible(emit, (character) {
+      final itemToToggle = event.item;
+      final willEquip = !_isItemEquipped(itemToToggle);
 
-    final Character currentCharacter = currentState.character;
-    final Item itemToToggle = event.item;
-    final bool willEquip = !_isItemEquipped(itemToToggle);
-
-    final List<Item> newInventory = currentCharacter.inventory.map((Item item) {
-      if (item.id == itemToToggle.id) {
-        return _setItemEquippedStatus(item, willEquip);
-      }
-      if (willEquip) {
-        if (_isItemEquipped(item) &&
-            _getItemSlot(item) == _getItemSlot(itemToToggle)) {
+      final newInventory = character.inventory.map((item) {
+        // Toggle the selected item
+        if (item.id == itemToToggle.id) {
+          return _setItemEquippedStatus(item, willEquip);
+        }
+        // If we are equipping a new item, unequip any other item in the same slot.
+        if (willEquip &&
+            _isItemEquipped(item) &&
+            _getItemSlot(item) == _getItemSlot(itemToToggle) &&
+            _getItemSlot(item) != EquipmentSlot.other) {
           return _setItemEquippedStatus(item, false);
         }
-      }
-      return item;
-    }).toList();
+        return item;
+      }).toList();
 
-    emit(CharacterLoaded(currentCharacter.copyWith(inventory: newInventory)));
+      return character.copyWith(inventory: newInventory);
+    });
   }
 
   void _onConsumeItem(ConsumeItemEvent event, Emitter<CharacterState> emit) {
-    final CharacterState currentState = state;
-    if (currentState is! CharacterLoaded) return;
+    _emitLoadedIfPossible(emit, (character) {
+      final inventory = List<Item>.from(character.inventory);
+      final itemIndex = inventory.indexWhere((item) => item.id == event.itemId);
 
-    final Character currentCharacter = currentState.character;
-    final List<Item> updatedInventory = List<Item>.from(currentCharacter.inventory);
-    final int itemIndex = updatedInventory.indexWhere((item) => item.id == event.itemId);
+      if (itemIndex != -1) {
+        final item = inventory[itemIndex];
+        final newQuantity = item.quantity - event.amount;
 
-    if (itemIndex != -1) {
-      final Item itemToConsume = updatedInventory[itemIndex];
-      final int newQuantity = (itemToConsume.quantity) - event.amount;
-
-      if (newQuantity > 0) {
-        updatedInventory[itemIndex] = itemToConsume.copyWith(quantity: newQuantity);
-      } else {
-        updatedInventory.removeAt(itemIndex);
+        if (newQuantity > 0) {
+          inventory[itemIndex] = item.copyWith(quantity: newQuantity);
+        } else {
+          inventory.removeAt(itemIndex);
+        }
+        return character.copyWith(inventory: inventory);
       }
-
-      emit(CharacterLoaded(currentCharacter.copyWith(inventory: updatedInventory)));
-    }
+      return character; // Item not found, return original character
+    });
   }
 
   void _onUseFeature(UseFeatureEvent event, Emitter<CharacterState> emit) {
-    final CharacterState state = this.state;
-    if (state is CharacterLoaded) {
-      final Character updatedChar = state.character.useResource(
-        event.resourceId,
-      );
-      emit(CharacterLoaded(updatedChar));
-    }
+    _emitLoadedIfPossible(
+      emit,
+      (character) => character.useResource(event.resourceId),
+    );
   }
 
   void _onCastSpell(CastSpellEvent event, Emitter<CharacterState> emit) {
-    if (state is! CharacterLoaded) return;
+    _emitLoadedIfPossible(emit, (char) {
+      // Cantrips don't consume spell slots.
+      if (event.slotLevel == 0) {
+        return char;
+      }
 
-    final Character char = (state as CharacterLoaded).character;
+      final currentSlots = char.spellSlotsCurrent[event.slotLevel] ?? 0;
+      if (currentSlots <= 0) {
+        // No spell slots left for this level.
+        return char;
+      }
 
-    if (event.slotLevel == 0) {
-      return;
-    }
+      final newSlots = Map<int, int>.from(char.spellSlotsCurrent);
+      newSlots[event.slotLevel] = currentSlots - 1;
 
-    final int currentSlots = char.spellSlotsCurrent[event.slotLevel] ?? 0;
-    if (currentSlots <= 0) {
-      return;
-    }
-
-    final Map<int, int> newSlots = Map<int, int>.from(char.spellSlotsCurrent);
-    newSlots[event.slotLevel] = currentSlots - 1;
-
-    emit(CharacterLoaded(char.copyWith(spellSlotsCurrent: newSlots)));
+      return char.copyWith(spellSlotsCurrent: newSlots);
+    });
   }
 
   void _onPerformShortRest(
     PerformShortRestEvent event,
     Emitter<CharacterState> emit,
   ) {
-    if (state is CharacterLoaded) {
-      final Character updatedChar = (state as CharacterLoaded).character.recoverShortRest();
-      emit(CharacterLoaded(updatedChar));
-    }
+    _emitLoadedIfPossible(
+      emit,
+      (character) => character.recoverShortRest(),
+    );
   }
 
   void _onPerformLongRest(
     PerformLongRestEvent event,
     Emitter<CharacterState> emit,
   ) {
-    if (state is CharacterLoaded) {
-      final Character updatedChar = (state as CharacterLoaded).character.recoverLongRest();
-      emit(CharacterLoaded(updatedChar));
-    }
+    _emitLoadedIfPossible(
+      emit,
+      (character) => character.recoverLongRest(),
+    );
   }
 
+  // Helper methods for item equipping
   bool _isItemEquipped(Item item) {
     if (item is Weapon) return item.isEquipped;
     if (item is Armor) return item.isEquipped;

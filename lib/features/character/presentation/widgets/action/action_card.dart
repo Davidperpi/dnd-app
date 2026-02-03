@@ -1,3 +1,4 @@
+import 'package:dnd_app/core/constants/damage_type.dart';
 import 'package:dnd_app/features/character/data/datasources/character_ability_local_data_source.dart';
 import 'package:dnd_app/features/character/domain/entities/character.dart';
 import 'package:dnd_app/features/character/domain/entities/character_ability.dart';
@@ -12,6 +13,20 @@ import 'components/action_badges.dart';
 import 'components/action_quick_button.dart';
 import 'components/action_stats.dart';
 import 'components/action_visual.dart';
+
+// Helper functions for translation
+String translateActionCost(ActionCost cost) {
+  return switch (cost) {
+    ActionCost.action => 'ACCIÓN',
+    ActionCost.bonusAction => 'ACCIÓN ADICIONAL',
+    ActionCost.reaction => 'REACCIÓN',
+    ActionCost.free => 'GRATIS',
+  };
+}
+
+String translateDamageType(DamageType type) {
+  return type.label.toUpperCase();
+}
 
 class ActionCard extends StatelessWidget {
   final CharacterAction action;
@@ -40,10 +55,10 @@ class ActionCard extends StatelessWidget {
 
     final Color borderColor = isFav
         ? Colors.amber
-        : theme.colorScheme.outline.withValues(alpha: 0.1);
+        : theme.colorScheme.outline.withOpacity(0.1);
     final double borderWidth = isFav ? 2.0 : 1.0;
     final Color cardColor = isFav
-        ? Colors.amber.withValues(alpha: 0.05)
+        ? Colors.amber.withOpacity(0.05)
         : theme.colorScheme.surface;
 
     final Widget? resourceBadge = _buildResourceBadge(accentColor);
@@ -56,7 +71,7 @@ class ActionCard extends StatelessWidget {
         border: Border.all(color: borderColor, width: borderWidth),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -108,9 +123,7 @@ class ActionCard extends StatelessWidget {
                           if (action.damageType != null)
                             ActionBadge(
                               text: translateDamageType(action.damageType!),
-                              backgroundColor: accentColor.withValues(
-                                alpha: 0.1,
-                              ),
+                              backgroundColor: accentColor.withOpacity(0.1),
                               textColor: accentColor,
                             ),
                         ],
@@ -142,7 +155,7 @@ class ActionCard extends StatelessWidget {
     if (action.resourceCost is ItemCost && action.remainingUses != null) {
       return ActionBadge(
         text: "x${action.remainingUses}",
-        backgroundColor: accentColor.withValues(alpha: 0.2),
+        backgroundColor: accentColor.withOpacity(0.2),
         textColor: accentColor,
       );
     }
@@ -150,7 +163,7 @@ class ActionCard extends StatelessWidget {
     if (action.type == ActionType.spell && cost == null) {
       return ActionBadge(
         text: "TRUCO",
-        backgroundColor: accentColor.withValues(alpha: 0.2),
+        backgroundColor: accentColor.withOpacity(0.2),
         textColor: accentColor,
       );
     }
@@ -159,18 +172,18 @@ class ActionCard extends StatelessWidget {
 
     return switch (cost) {
       SpellSlotCost(level: final int lvl) => ActionBadge(
-        text: "NVL $lvl",
-        backgroundColor: accentColor.withValues(alpha: 0.2),
+        text: "NIV $lvl",
+        backgroundColor: accentColor.withOpacity(0.2),
         textColor: accentColor,
       ),
       ItemCost(amount: final int amt) => ActionBadge(
         text: "$amt ${amt > 1 ? 'USOS' : 'USO'}",
-        backgroundColor: accentColor.withValues(alpha: 0.2),
+        backgroundColor: accentColor.withOpacity(0.2),
         textColor: accentColor,
       ),
       FeatureResourceCost(resourceId: final String resId) =>
         () {
-          String label = "RASGO"; // Fallback por defecto
+          String label = "RASGO"; // Default fallback
           final CharacterAbility? abilityDef = CharacterAbilityLocalDataSource.registry[resId];
 
           if (abilityDef != null && abilityDef.shortName != null && abilityDef.shortName!.isNotEmpty) {
@@ -179,7 +192,7 @@ class ActionCard extends StatelessWidget {
           
           return ActionBadge(
             text: label,
-            backgroundColor: accentColor.withValues(alpha: 0.2),
+            backgroundColor: accentColor.withOpacity(0.2),
             textColor: accentColor,
           );
         }(),

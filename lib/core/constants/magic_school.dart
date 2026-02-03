@@ -1,4 +1,4 @@
-// domain/entities/magic_school.dart
+/// Defines the different schools of magic in the game.
 enum MagicSchool {
   abjuration,
   conjuration,
@@ -10,11 +10,17 @@ enum MagicSchool {
   transmutation,
 }
 
-extension MagicSchoolExt on MagicSchool {
-  String get nameEs => switch (this) {
-    MagicSchool.evocation => 'Evocación',
-    MagicSchool.illusion => 'Ilusión',
-
-    _ => name.toUpperCase(),
-  };
+extension MagicSchoolExtension on MagicSchool {
+  String get label {
+    return switch (this) {
+      MagicSchool.abjuration => 'ABJURACIÓN',
+      MagicSchool.conjuration => 'CONJURACIÓN',
+      MagicSchool.divination => 'ADIVINACIÓN',
+      MagicSchool.enchantment => 'ENCANTAMIENTO',
+      MagicSchool.evocation => 'EVOCACIÓN',
+      MagicSchool.illusion => 'ILUSIÓN',
+      MagicSchool.necromancy => 'NECROMANCIA',
+      MagicSchool.transmutation => 'TRANSMUTACIÓN',
+    };
+  }
 }

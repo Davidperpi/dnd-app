@@ -2,7 +2,7 @@ import 'package:equatable/equatable.dart';
 
 enum ItemType { weapon, armor, potion, gear, tool }
 
-/// Clase base abstracta. Todo en el inventario es un Item.
+/// Abstract base class. Everything in the inventory is an Item.
 abstract class Item extends Equatable {
   final String id;
   final String name;

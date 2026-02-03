@@ -193,9 +193,9 @@ class Character extends Equatable {
   List<Weapon> get equippedWeapons =>
       weapons.where((Weapon w) => w.isEquipped).toList();
   Armor? get equippedArmor {
-    final Iterable<Armor> armors = inventory.whereType<Armor>().where(
-      (Armor a) => a.isEquipped,
-    );
+    final Iterable<Armor> armors = inventory
+        .whereType<Armor>()
+        .where((Armor a) => a.isEquipped && a.armorType != ArmorType.shield);
     return armors.isNotEmpty ? armors.first : null;
   }
 

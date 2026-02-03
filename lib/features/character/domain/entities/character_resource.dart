@@ -3,8 +3,8 @@ import 'package:equatable/equatable.dart';
 enum RefreshRule { shortRest, longRest, dawn, passive, never }
 
 class CharacterResource extends Equatable {
-  final String id; // ej: 'spell_slots_1', 'bardic_inspiration', 'action_surge'
-  final String name; // ej: 'Espacios de Conjuro Nvl 1', 'Inspiración'
+  final String id; // e.g., 'spell_slots_1', 'bardic_inspiration', 'action_surge'
+  final String name; // e.g., 'Level 1 Spell Slots', 'Inspiration'
   final int current;
   final int max;
   final RefreshRule refresh;
@@ -17,10 +17,10 @@ class CharacterResource extends Equatable {
     required this.refresh,
   });
 
-  // Helper para saber si podemos gastar
+  // Helper to check if we can spend
   bool get isAvailable => current > 0;
 
-  // CopyWith para inmutabilidad (esencial para el BLoC)
+  // CopyWith for immutability (essential for BLoC)
   CharacterResource copyWith({
     String? id,
     String? name,

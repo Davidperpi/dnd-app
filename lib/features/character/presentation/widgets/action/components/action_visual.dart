@@ -15,33 +15,53 @@ class ActionVisual extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    IconData icon = Icons.flash_on;
-    final String nameLower = action.name.toLowerCase();
-
-    if (action.type == ActionType.attack) {
-      if (nameLower.contains('daga') || nameLower.contains('dagger')) {
-        icon = Icons.change_history;
-      } else if (nameLower.contains('espada') || nameLower.contains('sable')) {
-        icon = Icons.kebab_dining;
-      } else if (nameLower.contains('arco') || nameLower.contains('flecha')) {
-        icon = Icons.u_turn_left;
-      } else {
-        icon = Icons.gavel;
-      }
-    } else if (action.type == ActionType.utility) {
-      if (nameLower.contains('correr')) icon = Icons.directions_run;
-      if (nameLower.contains('esquivar')) icon = Icons.shield;
-      if (nameLower.contains('destrabarse')) icon = Icons.compare_arrows;
-    }
+    final IconData icon = _getIconForAction();
 
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: color.withOpacity(0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Icon(icon, color: color, size: size * 0.5),
     );
+  }
+
+  IconData _getIconForAction() {
+    final String nameLower = action.name.toLowerCase();
+
+    switch (action.type) {
+      case ActionType.attack:
+        if (nameLower.contains('daga') || nameLower.contains('dagger')) {
+          return Icons.change_history;
+        } else if (nameLower.contains('espada') ||
+            nameLower.contains('sable') ||
+            nameLower.contains('sword')) {
+          return Icons.kebab_dining;
+        } else if (nameLower.contains('arco') ||
+            nameLower.contains('flecha') ||
+            nameLower.contains('bow') ||
+            nameLower.contains('arrow')) {
+          return Icons.u_turn_left;
+        } else {
+          return Icons.gavel; // Default for attacks
+        }
+      case ActionType.spell:
+        return Icons.auto_fix_high; // Icon for spells
+      case ActionType.utility:
+        if (nameLower.contains('correr') || nameLower.contains('dash')) {
+          return Icons.directions_run;
+        } else if (nameLower.contains('esquivar') || nameLower.contains('dodge')) {
+          return Icons.shield;
+        } else if (nameLower.contains('destrabarse') ||
+            nameLower.contains('disengage')) {
+          return Icons.compare_arrows;
+        } else {
+          return Icons.settings_accessibility; // Default for utility
+        }
+      case ActionType.feature:
+        return Icons.flash_on; // Icon for features
+    }
   }
 }

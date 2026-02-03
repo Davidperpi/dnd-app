@@ -8,13 +8,13 @@ class RestMenuButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
-      icon: const Icon(Icons.nights_stay), // Icono de Luna/Descanso
+      icon: const Icon(Icons.nights_stay), // Moon/Rest Icon
       tooltip: "Descansar",
       offset: const Offset(0, 50),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       onSelected: (String value) => _handleRest(context, value),
       itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-        // OPCIÓN 1: DESCANSO CORTO
+        // OPTION 1: SHORT REST
         const PopupMenuItem<String>(
           value: 'short',
           child: Row(
@@ -38,7 +38,7 @@ class RestMenuButton extends StatelessWidget {
           ),
         ),
         const PopupMenuDivider(),
-        // OPCIÓN 2: DESCANSO LARGO
+        // OPTION 2: LONG REST
         const PopupMenuItem<String>(
           value: 'long',
           child: Row(
@@ -53,7 +53,7 @@ class RestMenuButton extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    "8 Horas - Restablece TODO",
+                    "8 Horas - Restaura TODO",
                     style: TextStyle(fontSize: 10, color: Colors.grey),
                   ),
                 ],
@@ -67,26 +67,25 @@ class RestMenuButton extends StatelessWidget {
 
   void _handleRest(BuildContext context, String type) {
     if (type == 'short') {
-      // 1. Ejecutar Lógica
+      // 1. Execute Logic
       context.read<CharacterBloc>().add(const PerformShortRestEvent());
 
-      // 2. Feedback Visual (Opcional)
-      // ScreenEffects.showMagicBlast(context, Colors.orange);
+      // 2. Visual Feedback (Optional)
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text("☕ Te tomas un respiro. Has recuperado tus recursos."),
+          content: Text("☕ Tomas un respiro. Recursos recuperados."),
           backgroundColor: Colors.orange,
           duration: Duration(seconds: 2),
         ),
       );
     } else if (type == 'long') {
-      // 1. Confirmación para no darle sin querer
+      // 1. Confirmation to avoid accidental clicks
       showDialog(
         context: context,
         builder: (BuildContext ctx) => AlertDialog(
           title: const Text("¿Dormir 8 horas?"),
           content: const Text(
-            "Esto restablecerá tu vida, magia y recursos al máximo.",
+            "Esto restaurará tu salud, magia y recursos al máximo.",
           ),
           actions: <Widget>[
             TextButton(
@@ -96,15 +95,14 @@ class RestMenuButton extends StatelessWidget {
             FilledButton(
               onPressed: () {
                 Navigator.pop(ctx);
-                // Ejecutar descanso
+                // Execute rest
                 context.read<CharacterBloc>().add(const PerformLongRestEvent());
 
                 // Feedback
-                // ScreenEffects.showMagicBlast(context, Colors.indigo);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
-                      "💤 Has dormido plácidamente. Todo restablecido.",
+                      "💤 Has dormido profundamente. Todo se ha restaurado.",
                     ),
                     backgroundColor: Colors.indigo,
                     duration: Duration(seconds: 2),

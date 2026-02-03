@@ -1,40 +1,40 @@
 import 'package:dnd_app/features/character/domain/entities/character_action.dart';
 import 'package:dnd_app/features/character/domain/entities/character_resource.dart';
 
-/// Define una habilidad, rasgo o aptitud específica de un personaje.
+/// Defines a specific ability, trait, or skill of a character.
 ///
-/// Las habilidades son la representación estática de lo que un personaje PUEDE hacer,
-/// como "Inspiración Bárdica" o "Tomar Aliento". No representan el uso
-/// de la habilidad en sí, sino su definición según las reglas.
+/// Abilities are the static representation of what a character CAN do,
+/// such as "Bardic Inspiration" or "Second Wind". They do not represent the use
+/// of the ability itself, but its definition according to the rules.
 class CharacterAbility {
-  /// El identificador único de la habilidad (ej: 'bardic_inspiration').
+  /// The unique identifier for the ability (e.g., 'bardic_inspiration').
   final String id;
 
-  /// El nombre completo y legible de la habilidad (ej: 'Inspiración Bárdica').
+  /// The full, readable name of the ability (e.g., 'Bardic Inspiration').
   final String name;
 
-  /// Un nombre corto o abreviatura opcional (ej: 'IB').
+  /// An optional short name or abbreviation (e.g., 'BI').
   final String? shortName;
 
-  /// La descripción completa de lo que hace la habilidad y sus reglas.
+  /// The full description of what the ability does and its rules.
   final String description;
 
-  /// El nivel en el que se adquiere la habilidad. Opcional.
+  /// The level at which the ability is acquired. Optional.
   final int? level;
 
-  /// La regla que determina cuándo se recargan los usos de esta habilidad
-  /// (ej: después de un descanso corto o largo).
+  /// The rule that determines when the uses of this ability are recharged
+  /// (e.g., after a short or long rest).
   final RefreshRule refreshRule;
 
-  /// Una plantilla para la acción que el personaje puede ejecutar usando esta habilidad.
-  /// Define el coste (acción, acción bonus), el tipo y otros detalles.
-  /// Es opcional para habilidades pasivas que no tienen una acción asociada.
+  /// A template for the action the character can perform using this ability.
+  /// Defines the cost (action, bonus action), type, and other details.
+  /// It is optional for passive abilities that do not have an associated action.
   final CharacterAction? actionTemplate;
 
-  /// Un mapa opcional que define cómo escala la habilidad con el nivel.
+  /// An optional map that defines how the ability scales with level.
   ///
-  /// La clave es el nivel en el que ocurre el cambio, y el valor es una
-  /// descripción del nuevo efecto o un valor actualizado (ej: {5: '1d8', 10: '1d10'}).
+  /// The key is the level at which the change occurs, and the value is a
+  /// description of the new effect or an updated value (e.g., {5: '1d8', 10: '1d10'}).
   final Map<int, String>? levelScaling;
 
   const CharacterAbility({

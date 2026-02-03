@@ -1,6 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 
-import '../../../../core/error/failures.dart'; // Asegúrate que tu carpeta se llama 'error' (singular)
+import '../../../../core/error/failures.dart'; // Make sure your folder is named 'error' (singular)
 import '../entities/character.dart';
 import '../repositories/character_repository.dart';
 
@@ -9,7 +9,7 @@ class GetCharacter {
 
   GetCharacter(this.repository);
 
-  // 'call' permite usar la clase como una función: getCharacter()
+  // 'call' allows using the class as a function: getCharacter()
   Future<Either<Failure, Character>> call() async {
     return await repository.getCharacter();
   }

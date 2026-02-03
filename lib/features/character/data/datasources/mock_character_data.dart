@@ -15,7 +15,7 @@ const int _charismaScore = 18;
 const Character mockAidan = Character(
   id: 'aidan-001',
   name: 'Aidan',
-  race: 'Humano',
+  race: 'Human',
   characterClass: 'Bard (College of Swords)',
   level: 5,
   maxHp: 29,
@@ -60,12 +60,12 @@ const Character mockAidan = Character(
     3: 2,
   },
   description:
-      "Crecido en el teatro ambulante 'El Espejo de las Estrellas', Aidan aprendió pronto que la vida es una actuación. "
-      "Tras la misteriosa desaparición de su amiga Dafne y la creciente oscuridad de su mentora Selana, huyó llevando consigo "
-      "una daga élfica, un anillo de su pasado olvidado y un dado trucado robado a modo de despedida.\n\n"
-      "Fue el viejo bardo Haldric quien pulió su talento en 'Los Hijos del Viento', enseñándole a mezclar acero y magia. "
-      "Expulsado del Colegio de Bardos por defender su honor ante un noble arrogante, ahora viaja como un alma errante. "
-      "Carismático, pragmático y alérgico a las ataduras, busca en Asbravn su próxima gran historia... o su próxima gran apuesta.",
+      "Raised in the traveling theater 'The Star Mirror', Aidan soon learned that life is a performance. "
+      "After the mysterious disappearance of his friend Dafne and the growing darkness of his mentor Selana, he fled, taking with him "
+      "an elven dagger, a ring from his forgotten past, and a loaded die stolen as a farewell.\n\n"
+      "It was the old bard Haldric who polished his talent in 'The Children of the Wind', teaching him to mix steel and magic. "
+      "Expelled from the College of Bards for defending his honor against an arrogant noble, he now travels as a wandering soul. "
+      "Charismatic, pragmatic, and allergic to attachments, he searches in Asbravn for his next great story... or his next big gamble.",
   imageUrl: 'assets/images/aidan_portrait.jpeg',
   expertSkills: <Skill>[Skill.acrobatics, Skill.stealth],
   proficientSkills: <Skill>[Skill.survival],
@@ -77,43 +77,22 @@ const Character mockAidan = Character(
   resources: <String, CharacterResource>{
     'bardic_inspiration': CharacterResource(
       id: 'bardic_inspiration',
-      name: 'Inspiración Bárdica (d8)',
+      name: 'Bardic Inspiration (d8)',
       max: (_charismaScore - 10) ~/ 2,
       current: (_charismaScore - 10) ~/ 2, 
       refresh: RefreshRule.longRest,
     ),
-    'defensive_flourish': CharacterResource(
-      id: 'defensive_flourish',
-      name: 'Floritura Defensiva',
-      max: 0,
-      current: 0,
-      refresh: RefreshRule.longRest,
-    ),
-    'slashing_flourish': CharacterResource(
-      id: 'slashing_flourish',
-      name: 'Floritura Ofensiva',
-      max: 0,
-      current: 0,
-      refresh: RefreshRule.longRest,
-    ),
-    'mobile_flourish': CharacterResource(
-      id: 'mobile_flourish',
-      name: 'Floritura Móvil',
-      max: 0,
-      current: 0,
-      refresh: RefreshRule.longRest,
-    ),
      'song_of_rest': CharacterResource(
       id: 'song_of_rest',
-      name: 'Canción de Descanso (d6)',
+      name: 'Song of Rest (d6)',
       max: 1,
       current: 1,
       refresh: RefreshRule.shortRest,
     ),
   },
   features: <CharacterFeature>[
-    CharacterFeature(name: 'Lucha con Dos Armas', description: 'Cuando luchas con dos armas, puedes añadir tu modificador de característica al daño del segundo ataque.'),
-    CharacterFeature(name: 'Pericia', description: 'Eliges dos de tus competencias de habilidad, y tu bonificador de competencia se duplica para cualquier prueba de característica que hagas usando cualquiera de las competencias elegidas.'),
-    CharacterFeature(name: 'Jack of All Trades', description: 'Puedes sumar la mitad de tu bonificador de competencia, redondeado hacia abajo, a cualquier prueba de característica que hagas y que no sume ya tu bonificador de competencia.'),
+    CharacterFeature(name: 'Two-Weapon Fighting', description: 'When you engage in two-weapon fighting, you can add your ability modifier to the damage of the second attack.'),
+    CharacterFeature(name: 'Expertise', description: 'Choose two of your skill proficiencies. Your proficiency bonus is doubled for any ability check you make that uses either of the chosen proficiencies.'),
+    CharacterFeature(name: 'Jack of All Trades', description: 'You can add half your proficiency bonus, rounded down, to any ability check you make that doesn\'t already include your proficiency bonus.'),
   ]
 );

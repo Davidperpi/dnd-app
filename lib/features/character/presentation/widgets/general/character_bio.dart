@@ -14,14 +14,14 @@ class CharacterBio extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // --- IMAGEN DE CABECERA ---
+        // --- HEADER IMAGE ---
         Container(
           height: 200,
           width: double.infinity,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: theme.colorScheme.secondary.withValues(alpha: 0.2),
+              color: theme.colorScheme.secondary.withOpacity(0.2),
             ),
             image: DecorationImage(
               image: AssetImage(character.imageUrl),
@@ -37,7 +37,7 @@ class CharacterBio extends StatelessWidget {
                 end: Alignment.bottomCenter,
                 colors: <Color>[
                   Colors.transparent,
-                  // CORREGIDO: Usamos el fondo del scaffold para un fundido perfecto
+                  // FIXED: We use the scaffold background for a perfect fade
                   theme.scaffoldBackgroundColor,
                 ],
                 stops: const <double>[0.6, 1.0],
@@ -48,7 +48,7 @@ class CharacterBio extends StatelessWidget {
 
         const SizedBox(height: 20),
 
-        // --- TÍTULO DE SECCIÓN ---
+        // --- SECTION TITLE ---
         Text(
           "TRASFONDO",
           style: theme.textTheme.titleLarge?.copyWith(
@@ -59,13 +59,13 @@ class CharacterBio extends StatelessWidget {
 
         const SizedBox(height: 10),
 
-        // --- TEXTO DESCRIPTIVO ---
+        // --- DESCRIPTIVE TEXT ---
         Text(
           character.description,
           style: theme.textTheme.bodyMedium?.copyWith(
             height: 1.6,
-            // Color de texto con opacidad del tema
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+            // Text color with theme opacity
+            color: theme.colorScheme.onSurface.withOpacity(0.8),
             fontSize: 14,
           ),
         ),

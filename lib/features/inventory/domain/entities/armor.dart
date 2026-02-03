@@ -26,7 +26,7 @@ class Armor extends Item {
     this.isEquipped = false,
   }) : super(type: ItemType.armor);
 
-  /// CopyWith completo
+  /// Full copyWith
   @override
   Armor copyWith({
     String? id,

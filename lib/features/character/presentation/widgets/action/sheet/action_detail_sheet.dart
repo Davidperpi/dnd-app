@@ -4,13 +4,14 @@ import 'package:dnd_app/features/character/domain/entities/character_action.dart
 import 'package:dnd_app/features/character/domain/entities/character_resource.dart';
 import 'package:dnd_app/features/character/domain/entities/resource_cost.dart';
 import 'package:dnd_app/features/character/presentation/bloc/character_bloc.dart';
-import 'package:dnd_app/features/character/presentation/widgets/action/components/action_badges.dart';
 import 'package:dnd_app/features/character/presentation/widgets/action/components/action_visual.dart';
 import 'package:dnd_app/features/character/presentation/widgets/action/sheet/cast_spell_sheet.dart';
 import 'package:dnd_app/features/spells/domain/entities/spell.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../../../core/constants/damage_type.dart';
 
 class ActionDetailSheet extends StatelessWidget {
   final CharacterAction action;
@@ -273,4 +274,44 @@ class _FavoriteButton extends StatelessWidget {
       },
     );
   }
+}
+
+String getDamageTypeDescription(DamageType damageType) {
+  switch (damageType) {
+    case DamageType.slashing:
+      return 'Daño Cortante: Heridas profundas y sangrantes.';
+    case DamageType.piercing:
+      return 'Daño Perforante: Heridas punzantes y penetrantes.';
+    case DamageType.bludgeoning:
+      return 'Daño Contundente: Aplastamiento y fracturas.';
+    case DamageType.fire:
+      return 'Daño de Fuego: Quemaduras y combustión.';
+    case DamageType.cold:
+      return 'Daño de Frío: Congelación y fragilidad.';
+    case DamageType.lightning:
+      return 'Daño de Rayo: Electricidad y parálisis.';
+    case DamageType.force:
+      return 'Daño de Fuerza: Energía mágica pura y devastadora.';
+    case DamageType.necrotic:
+      return 'Daño Necrótico: Putrefacción y descomposición.';
+    case DamageType.radiant:
+      return 'Daño Radiante: Luz divina y purificadora.';
+    case DamageType.poison:
+      return 'Daño de Veneno: Toxinas y corrupción.';
+    case DamageType.acid:
+      return 'Daño Ácido: Corrosión y disolución.';
+    case DamageType.psychic:
+      return 'Daño Psíquico: Asalto mental y locura.';
+    case DamageType.thunder:
+      return 'Daño de Trueno: Ondas de choque y sonido.';
+  }
+}
+
+String translateActionCost(ActionCost cost) {
+  return switch (cost) {
+    ActionCost.action => '1 Acción',
+    ActionCost.bonusAction => 'Acción Adicional',
+    ActionCost.reaction => 'Reacción',
+    ActionCost.free => 'Gratis',
+  };
 }

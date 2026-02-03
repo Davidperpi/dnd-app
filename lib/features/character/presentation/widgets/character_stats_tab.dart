@@ -24,9 +24,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
     final ThemeData theme = Theme.of(context);
     final Character char = widget.character;
 
-    // Chequeo rápido para saber si hay defensas que mostrar
-    final bool hasDefenses =
-        char.resistances.isNotEmpty ||
+    final bool hasDefenses = char.resistances.isNotEmpty ||
         char.immunities.isNotEmpty ||
         char.vulnerabilities.isNotEmpty;
 
@@ -35,20 +33,17 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          // 1. ATRIBUTOS
+          // 1. ATTRIBUTES
           _buildSectionHeader(
             theme: theme,
             title: _showSavingThrows ? 'SALVACIONES' : 'ATRIBUTOS',
-            actionLabel: _showSavingThrows
-                ? 'VER ATRIBUTOS'
-                : 'VER SALVACIONES',
+            actionLabel:
+                _showSavingThrows ? 'VER ATRIBUTOS' : 'VER SALVACIONES',
             onActionTap: () =>
                 setState(() => _showSavingThrows = !_showSavingThrows),
             icon: Icons.swap_horiz,
           ),
-
           const SizedBox(height: 16),
-
           Center(
             child: Wrap(
               spacing: 12,
@@ -59,44 +54,32 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
               }).toList(),
             ),
           ),
-
           const SizedBox(height: 24),
-
-          // 2. PERCEPCIÓN PASIVA
+          // 2. PASSIVE PERCEPTION
           _buildPassivePerceptionRow(char, theme),
-
           const SizedBox(height: 32),
-
-          // 3. DEFENSAS (Ahora con Cabecera y Leyenda)
+          // 3. DEFENSES (Now with Header and Legend)
           _buildDefensesSection(char, theme, context),
-
-          // Lógica de separación:
-          // Si hay defensas, ponemos separadores más amplios.
-          // Si no, el separador estándar antes de skills.
           if (hasDefenses) ...<Widget>[
             const SizedBox(height: 32),
-          ] else ...<Widget>[const SizedBox(height: 24)],
-
-          // 4. COMPETENCIAS
+          ] else ...<Widget>[
+            const SizedBox(height: 24),
+          ],
+          // 4. SKILLS
           _buildSectionHeader(
             theme: theme,
-            title: 'COMPETENCIAS',
-            actionLabel: _showAllSkills ? 'VER MENOS' : 'VER TODAS',
+            title: 'HABILIDADES',
+            actionLabel: _showAllSkills ? 'MOSTRAR MENOS' : 'MOSTRAR TODO',
             onActionTap: () => setState(() => _showAllSkills = !_showAllSkills),
             icon: _showAllSkills ? Icons.expand_less : Icons.expand_more,
           ),
-
           const SizedBox(height: 16),
-
           _buildSkillsList(char, theme),
-
           const SizedBox(height: 32),
           Divider(color: theme.dividerColor),
           const SizedBox(height: 32),
-
           // 5. BIO
           CharacterBio(character: char),
-
           const SizedBox(height: 40),
         ],
       ),
@@ -104,10 +87,10 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
   }
 
   // ===========================================================================
-  // WIDGETS AUXILIARES
+  // HELPER WIDGETS
   // ===========================================================================
 
-  /// Sección de Defensas con Cabecera Unificada y Botón de Ayuda
+  /// Defenses Section with Unified Header and Help Button
   Widget _buildDefensesSection(
     Character char,
     ThemeData theme,
@@ -122,18 +105,16 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        // 1. CABECERA UNIFICADA
+        // 1. UNIFIED HEADER
         _buildSectionHeader(
           theme: theme,
           title: 'DEFENSAS',
-          actionLabel: 'LEYENDA', // Botón para explicar colores
+          actionLabel: 'LEYENDA', // Button to explain colors
           icon: Icons.help_outline,
           onActionTap: () => _showDefenseLegendDialog(context, theme),
         ),
-
         const SizedBox(height: 16),
-
-        // 2. CHIPS DE DEFENSA
+        // 2. DEFENSE CHIPS
         SizedBox(
           width: double.infinity,
           child: Wrap(
@@ -141,29 +122,27 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
             runSpacing: 12,
             alignment: WrapAlignment.center,
             children: <Widget>[
-              // Resistencias (Dorado/Ámbar)
+              // Resistances (Gold/Amber)
               ...char.resistances.map(
                 (DamageType res) => _buildDefenseChip(
                   damageType: res,
-                  color: const Color(0xFFFFC107), // Ámbar
+                  color: const Color(0xFFFFC107), // Amber
                   theme: theme,
                 ),
               ),
-
-              // Inmunidades (Verde)
+              // Immunities (Green)
               ...char.immunities.map(
                 (DamageType imm) => _buildDefenseChip(
                   damageType: imm,
-                  color: const Color(0xFF4CAF50), // Verde
+                  color: const Color(0xFF4CAF50), // Green
                   theme: theme,
                 ),
               ),
-
-              // Vulnerabilidades (Rojo)
+              // Vulnerabilities (Red)
               ...char.vulnerabilities.map(
                 (DamageType vul) => _buildDefenseChip(
                   damageType: vul,
-                  color: const Color(0xFFEF5350), // Rojo suave
+                  color: const Color(0xFFEF5350), // Soft Red
                   theme: theme,
                 ),
               ),
@@ -174,13 +153,13 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
     );
   }
 
-  /// Popup de Leyenda para explicar los colores
+  /// Legend Popup to explain the colors
   void _showDefenseLegendDialog(BuildContext context, ThemeData theme) {
     showDialog(
       context: context,
       builder: (BuildContext ctx) => AlertDialog(
         backgroundColor: theme.colorScheme.surfaceContainer,
-        title: Text("Guía de Defensas", style: theme.textTheme.titleLarge),
+        title: Text("Guía de Defensa", style: theme.textTheme.titleLarge),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
@@ -195,7 +174,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
             _buildLegendRow(
               Icons.health_and_safety,
               "Inmunidad",
-              "No recibes NINGÚN daño.",
+              "NO recibes daño.",
               const Color(0xFF4CAF50),
               theme,
             ),
@@ -213,7 +192,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
             child: Text(
-              "OK",
+              "ENTENDIDO",
               style: TextStyle(color: theme.colorScheme.secondary),
             ),
           ),
@@ -259,7 +238,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
+        border: Border.all(color: color.withOpacity(0.5)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -267,11 +246,11 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
           Icon(damageType.icon, size: 14, color: color),
           const SizedBox(width: 6),
           Text(
-            damageType.nameES,
+            damageType.label,
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
+              color: theme.colorScheme.onSurface.withOpacity(0.9),
             ),
           ),
         ],
@@ -286,7 +265,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(color: Colors.white.withOpacity(0.05)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -304,7 +283,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                  color: theme.colorScheme.onSurface.withOpacity(0.8),
                   letterSpacing: 1.0,
                 ),
               ),
@@ -391,7 +370,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
           border: Border.all(
             color: (_showSavingThrows && isProficient)
                 ? theme.colorScheme.secondary
-                : theme.colorScheme.secondary.withValues(alpha: 0.15),
+                : theme.colorScheme.secondary.withOpacity(0.15),
             width: (_showSavingThrows && isProficient) ? 1.5 : 1,
           ),
         ),
@@ -402,7 +381,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
                 letterSpacing: 1.5,
               ),
             ),
@@ -453,7 +432,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
 
     final List<Skill> skillsList = skillsToDisplaySet.toList()
       ..sort(
-        (Skill a, Skill b) => _getSkillNameES(a).compareTo(_getSkillNameES(b)),
+        (Skill a, Skill b) => _getSkillName(a).compareTo(_getSkillName(b)),
       );
 
     return Wrap(
@@ -481,8 +460,8 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
         borderRadius: BorderRadius.circular(6),
         border: Border.all(
           color: isTrained
-              ? accentColor.withValues(alpha: 0.5)
-              : theme.colorScheme.onSurface.withValues(alpha: 0.1),
+              ? accentColor.withOpacity(0.5)
+              : theme.colorScheme.onSurface.withOpacity(0.1),
         ),
       ),
       child: Row(
@@ -499,7 +478,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
                 shape: BoxShape.circle,
                 boxShadow: <BoxShadow>[
                   BoxShadow(
-                    color: accentColor.withValues(alpha: 0.4),
+                    color: accentColor.withOpacity(0.4),
                     blurRadius: 4,
                   ),
                 ],
@@ -511,7 +490,7 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
               height: 8,
               decoration: BoxDecoration(
                 border: Border.all(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
+                  color: theme.colorScheme.onSurface.withOpacity(0.3),
                   width: 1.5,
                 ),
                 shape: BoxShape.circle,
@@ -519,13 +498,13 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
             ),
           const SizedBox(width: 8),
           Text(
-            _getSkillNameES(skill),
+            _getSkillName(skill),
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
               color: isTrained
                   ? theme.colorScheme.onSurface
-                  : theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                  : theme.colorScheme.onSurface.withOpacity(0.6),
             ),
           ),
           const SizedBox(width: 6),
@@ -542,11 +521,11 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
     );
   }
 
-  String _getSkillNameES(Skill skill) {
+  String _getSkillName(Skill skill) {
     return switch (skill) {
       Skill.acrobatics => 'ACROBACIAS',
-      Skill.animalHandling => 'TRATO ANIMALES',
-      Skill.arcana => 'ARCANOS',
+      Skill.animalHandling => 'TRATO CON ANIMALES',
+      Skill.arcana => 'ARCANO',
       Skill.athletics => 'ATLETISMO',
       Skill.deception => 'ENGAÑO',
       Skill.history => 'HISTORIA',
@@ -556,10 +535,10 @@ class _CharacterStatsTabState extends State<CharacterStatsTab> {
       Skill.medicine => 'MEDICINA',
       Skill.nature => 'NATURALEZA',
       Skill.perception => 'PERCEPCIÓN',
-      Skill.performance => 'ACTUACIÓN',
+      Skill.performance => 'INTERPRETACIÓN',
       Skill.persuasion => 'PERSUASIÓN',
       Skill.religion => 'RELIGIÓN',
-      Skill.sleightOfHand => 'JUEGO MANOS',
+      Skill.sleightOfHand => 'JUEGO DE MANOS',
       Skill.stealth => 'SIGILO',
       Skill.survival => 'SUPERVIVENCIA',
     };
